@@ -1,0 +1,6 @@
+.drop_message{
+    padding: 60px !important;
+    display: flex;
+    justify-content: center;
+    width:100%
+}

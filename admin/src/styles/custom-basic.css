@@ -1,0 +1,201 @@
+input#upload {
+    display: none;
+}
+
+@media only screen and (min-width : 768px) {
+            label.MuiButtonBase-root.MuiButton-root.MuiButton-contained.MuiButton-containedSuccess.MuiButton-sizeMedium.MuiButton-containedSizeMedium.MuiButton-root.MuiButton-contained.MuiButton-containedSuccess.MuiButton-sizeMedium.MuiButton-containedSizeMedium {
+                width: 600px;
+                height: 400px;
+                background: white;
+                color: black;
+            }
+    }
+    @media only screen and (max-width : 768px) {
+        label.MuiButtonBase-root.MuiButton-root.MuiButton-contained.MuiButton-containedSuccess.MuiButton-sizeMedium.MuiButton-containedSizeMedium.MuiButton-root.MuiButton-contained.MuiButton-containedSuccess.MuiButton-sizeMedium.MuiButton-containedSizeMedium {
+            width: 100% !important;
+            background: white;
+            color: black;
+        }
+}
+
+
+
+.tablex{
+    width: 100%;
+    margin: 30px;
+    padding: 30px;
+}
+
+button.MuiButtonBase-root.MuiIconButton-root.MuiIconButton-colorError.MuiIconButton-sizeMedium {
+   /*display: none;*/
+}
+
+.table {
+    width: 100%;
+    }
+
+    .MuiBox-root  {
+        
+    }
+
+    .MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded.MuiPaper-elevation2 {
+        box-shadow: none;
+        background: white;
+        width: 100%;
+        padding: 20px;
+    }
+
+    .MuiBox-root.muiltr-zrlv9q {
+        position: relative;
+    }
+
+    td.MuiTableCell-root.MuiTableCell-body.MuiTableCell-alignLeft.MuiTableCell-sizeMedium {
+        background: white;
+        border: 1px solid #d3d3d370;
+    }
+
+    .MuiBox-root.muiltr-zrlv9q {
+        background: white;
+    }
+
+
+    th.MuiTableCell-root.MuiTableCell-head.MuiTableCell-alignLeft.MuiTableCell-sizeMedium {
+        width: 120px;
+    }
+
+    .mt-32.sm\:mt-48.p-24.pb-28.sm\:p-40.sm\:pb-28.rounded-2xl.border-2.border-dashed.rounded-2xl.bg-slate-100 {
+        background: white;
+    }
+
+    .flex.flex-1.w-9\/12.sm\:w-9\/12.items-center.px-16.border-1.rounded-full.MuiBox-root.muiltr-0 {
+        background: white;
+    }
+
+    .MuiBox-root.muiltr-1uj2axd {
+        min-height: 45px;
+        background: white;
+    }
+
+
+    
+    .MuiBox-root .muiltr-qpxlqp {
+        min-height: 45px;
+        position: relative;
+    }
+
+
+    .disabled{
+opacity: .3;
+background-color: unset !important;
+    }
+
+
+    .fullWidth {
+        width:100%
+    }
+
+
+    @media only screen and (min-width : 768px) {
+    input.MuiInputBase-input.MuiInput-input.muiltr-xudbmy-MuiInputBase-input-MuiInput-input {
+        width: 900px;
+    }
+
+    }
+
+    th.MuiTableCell-root.MuiTableCell-head.MuiTableCell-alignLeft.MuiTableCell-sizeMedium {
+        width: 105px;
+    }
+
+    td.MuiTableCell-root.MuiTableCell-body.MuiTableCell-alignLeft.MuiTableCell-sizeMedium {
+        width: 105px;
+    }
+
+    .red-border{
+        border: 4px dashed #ff000094 !important
+    }
+
+
+    @media screen and (max-width: 600px) {
+        .logo_img {
+           /*width: 100%;*/
+    
+            height: auto;
+        }
+    }
+    
+    /* For larger screens */
+    @media screen and (min-width: 601px) {
+        .logo_img {
+            /*width: 80%;*/ /* Adjust as needed */
+         
+            height: auto;
+        }
+    }
+
+
+
+    @media screen and (max-width: 600px) {
+        .dmnone {
+          display: none !important;
+        }
+      }
+
+
+      .flex-container {
+        display: flex;
+        gap: 10px; /* Optional: adds space between items */
+      }
+      
+      .flex-item {
+        padding: 10px;
+        
+      }
+
+
+
+
+
+
+      .MuiBox-root .MuiGrid2-direction-xs-row {
+      /*background-color: #f2fdf400 !important;*/  
+    }
+
+    .MuiBox-root .MuiGrid2-root{
+     /*  background: white; */
+    }
+    
+
+
+
+
+
+
+
+
+
+
+    .muiltr-104wp1u-MuiPaper-root-MuiDrawer-paper {
+       /* background: none;*/
+    }
+    
+    .MuiGrid2-root.MuiGrid2-direction-xs-row.drawerTable.drawer-table {
+       /* background: white;*/
+    }
+    
+    .muiltr-i9fmh8-MuiBackdrop-root-MuiModal-backdrop {
+      /*  background: none;*/
+    }
+
+
+
+
+    .gridx {
+        position: relative;
+        border: 1px solid #00000022;
+        padding-top: 7px;
+        width:100%;
+        }
+        .grid-containerx {
+        overflow-y: auto;
+       /*height: 600px;*/ 
+        }

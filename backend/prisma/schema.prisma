@@ -1,0 +1,134 @@
+generator client {
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "debian-openssl-1.1.x"]
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+superAdmin
+admin
+hospitalAssistant
+staff
+}
+
+enum CertificateStatus {
+  active
+  revoked
+  expired
+}
+
+enum CertificateAction {
+  create
+  revoke
+  renew
+  download
+  update
+  status_change
+}
+
+model admins {
+  id                     Int               @id @default(autoincrement())
+  name                   String
+  role                   Role              @default(admin)
+  email                  String?           @unique
+  password               String
+  address                String?           @db.VarChar(300)
+  phone                  String?           @db.VarChar(20)
+  created_at             DateTime?         @default(now())
+  created_by             Int?
+  updated_at             DateTime?         @default(now())
+  updated_by             Int?
+  hospital_id            Int?
+  photo                  String?
+
+  hospital_create        hospitals[]       @relation("admin_con")
+  hospital               hospitals?
+  admins                 admins[]          @relation("admin_con1")
+  creator                admins?           @relation("admin_con1", fields: [created_by], references: [id])
+  staff_hospital         hospitals?        @relation("abc", fields: [hospital_id], references: [id])
+
+  created_projects       projects[]        @relation("project_created_by")
+  updated_projects       projects[]        @relation("project_updated_by")
+  created_certificates   certificates[]    @relation("certificate_created_by")
+  updated_certificates   certificates[]    @relation("certificate_updated_by")
+  certificate_actions    certificate_logs[] @relation("certificate_log_action_by")
+}
+
+model hospitals {
+  id             Int       @id @default(autoincrement())
+  logo           String?
+  name           String
+  address        String?
+  created_by     Int
+  admin_id       Int       @unique
+  created_at     DateTime? @default(now())
+  updated_at     DateTime? @default(now())
+  updated_by     Int?
+  primary_color  String?
+  sub_color_1    String?
+  sub_color_2    String?
+
+  creator        admins?   @relation("admin_con", fields: [created_by], references: [id])
+  admin          admins    @relation(fields: [admin_id], references: [id])
+  staff_admin    admins[]  @relation("abc")
+}
+
+model projects {
+  id             Int       @id @default(autoincrement())
+  name           String    @unique
+  description    String?
+  pc_count       Int       @default(1)
+  status         String?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now())
+  created_by     Int
+  updated_by     Int
+
+  creator        admins    @relation("project_created_by", fields: [created_by], references: [id])
+  updater        admins    @relation("project_updated_by", fields: [updated_by], references: [id])
+  certificates   certificates[]
+}
+
+model certificates {
+  id                 Int               @id @default(autoincrement())
+  serial             String @unique
+  common_name        String
+  pc_identifier      String
+  issued_at          DateTime          @default(now())
+  expires_at         DateTime
+  revoked_at         DateTime?
+  status             CertificateStatus @default(active)
+  p12_password       String
+  download_count     Int               @default(0)
+  revocation_reason  String?
+  project_id         Int
+  previous_serial    String?
+  created_at         DateTime          @default(now())
+  updated_at         DateTime          @default(now())
+  created_by         Int
+  updated_by         Int
+
+  project            projects          @relation(fields: [project_id], references: [id])
+  creator            admins            @relation("certificate_created_by", fields: [created_by], references: [id])
+  updater            admins            @relation("certificate_updated_by", fields: [updated_by], references: [id])
+  logs               certificate_logs[]
+}
+
+model certificate_logs {
+  id                Int               @id @default(autoincrement())
+  certificate_id    Int
+  action            CertificateAction
+  action_by         Int
+  previous_status   String?
+  new_status        String?
+  metadata          Json?
+  created_at        DateTime          @default(now())
+  note  String?
+  certificate       certificates      @relation(fields: [certificate_id], references: [id])
+  actor             admins            @relation("certificate_log_action_by", fields: [action_by], references: [id])
+}

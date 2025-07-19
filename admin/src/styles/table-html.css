@@ -1,0 +1,142 @@
+ 
+.dpc-table .border-right-zero{
+    border-right: 0px;
+}
+
+.dpc-table{
+    width: 100%;
+    border-collapse: collapse;
+    padding: 20px !important;
+    /*background-color: white;*/
+    border-radius:5px ;
+    /*box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.19);*/
+    background: white;
+}
+
+.dpc td {
+    border: 1px solid lightgray;
+    padding: 3px;
+}
+.dpc th {
+    border: 1px solid lightgray;
+    padding: 3px;
+    text-align: center;
+    font-size: medium;
+}
+.dpc td {
+    border-radius: 0px;
+}
+.dpc th {
+    border-radius: 5px;
+    
+}
+
+.dpc .fxl {
+    font-size: x-large
+}
+
+.dpc .pv10{
+    padding: 10px 0px;
+}
+
+
+.dpc .pv5{
+    padding: 5px;
+}
+
+.dpc .b0{
+    border-left: 0px;
+    border-top: 0px;
+    border-bottom: 0px;
+}
+
+.width_double{
+    width:13%
+}
+
+.width_single{
+    width:6%
+}
+.width_others{
+    width:8%
+}
+.width_button{
+    width:12%
+}
+
+
+.drawerTable table, th, td {
+ 
+    padding: 5px;
+    text-align: center;
+  }
+
+
+.drawer-table .width_double{
+    width:10%
+}
+
+
+.drawer-table .width_single{
+    width:6%
+}
+
+.drawer-table .width_big{
+    width:40%
+}
+
+.drawer-table .t-right{
+    text-align: right;
+}
+
+.drawer-table .t-left{
+    text-align: left;
+}
+
+.drawer-table .t-center{
+    text-align: center;
+}
+
+.drawer-table  .border {
+    padding: 5px;
+    border: 1px solid lightgray;
+}
+
+.bgblanchedalmond {
+    background: #91abda38;
+}
+
+
+@media (min-width: 600px) {
+    .muiltr-78c6dr-MuiToolbar-root-MuiTablePagination-toolbar {
+        min-height: 2px;
+        padding-right: 2px;
+    }
+}
+
+
+.new_t_color_regular {
+    background: rgb(47 152 0 / 71%);
+    color: white;
+}
+
+.new_t_color_danger {
+    background: rgb(152 0 0 / 60%);
+    color: white;
+}
+
+.new_t_color_success {
+    background: rgb(152 0 0 / 60%);
+    color: white;
+}
+
+.new_t_color_incomplete {
+    background: rgb(34, 193, 195);
+    background: rgb(253 150 45 / 74%);
+    color: white;
+}
+
+.new_t_color_head {
+    background: #0000008c;
+    color: white;
+}

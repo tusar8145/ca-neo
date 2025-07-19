@@ -1,0 +1,50 @@
+@media (min-width: 768px) {
+    .hidden-on-large {
+      display: none;
+    }
+  }
+
+  .MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded.MuiPaper-elevation8.MuiPopover-paper.MuiMenu-paper.MuiMenu-paper.muiltr-1b6l82m-MuiPaper-root-MuiPopover-paper-MuiMenu-paper {
+    background: white !important;
+    color: black !important;
+}
+
+div#demo-simple-select-helper {
+  font-size: 15px !important;
+  padding: 12px 5px 5px 12px !important;
+  font-weight: 700 !important;
+}
+
+label#demo-simple-select-helper-label {
+  color: white !important;
+}
+
+li.MuiButtonBase-root.MuiMenuItem-root.MuiMenuItem-gutters.Mui-selected.MuiMenuItem-root.MuiMenuItem-gutters.Mui-selected.muiltr-9n4h75-MuiButtonBase-root-MuiMenuItem-root {
+  display: none !important;
+}
+
+svg.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.MuiSelect-icon.MuiSelect-iconOutlined.muiltr-ykrb2w-MuiSvgIcon-root-MuiSelect-icon {
+  font-size: 34px !important;
+}
+
+svg.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.MuiSelect-icon.MuiSelect-iconOutlined.MuiSelect-iconOpen.muiltr-1rf7fuy-MuiSvgIcon-root-MuiSelect-icon {
+
+  font-size: 34px !important;
+}
+
+svg.shrink-0.fill-current.text-48.MuiBox-root.muiltr-syvc0x {
+  margin-right: 5px !important;
+}
+
+.view-as{
+  border: 2px dashed;
+  border-radius: 12px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  margin-bottom: 40px;
+  background: #004CE5;
+}
+
+label#demo-simple-select-helper-label {
+  display: none;
+}
