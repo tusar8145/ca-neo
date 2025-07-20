@@ -264,7 +264,7 @@ export const downloadCertificate = async (req, res, next) => {
 export const downloadCertificate = async (req, res, next) => {
     const { serial } = req.params;
     const p12Path = path.join(CERTS_DIR, `${serial}.p12`);
-
+//user_id
     try {
         // Check if certificate exists
         if (!fs.existsSync(p12Path)) {
@@ -289,6 +289,19 @@ export const downloadCertificate = async (req, res, next) => {
         // Create a proper filename
         let filename = `client_${cert.pc_identifier}_${cert.common_name}.p12`;
         filename = filename.replaceAll(`${cert.pc_identifier}_${cert.pc_identifier}`, `${cert.pc_identifier}`);
+
+                // Log the download action
+        await prisma.certificate_logs.create({
+            data: {
+                certificate_id: cert.id,
+                action: 'download',
+                action_by: user_id,
+                previous_status: cert.status,
+                new_status: cert.status, // Status remains the same
+                note: `Certificate file downloaded`,
+                created_at: clock
+            }
+        });
 
         // Send the file
         res.download(p12Path, filename, (err) => {
