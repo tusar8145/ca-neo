@@ -124,10 +124,30 @@ const validateProjectOwnership = async (projectId, userId) => {
 
 export const createProjectWithCertificates = async (req, res, next) => {
   try {
-    const { name, description, status, days_valid  } = req.body;
+    const { name, description, status, days_valid, auto_create, staff_ids = [] } = req.body;
     const pc_count = parseInt(req.body.pc_count, 10);
     const pcCount = parseInt(pc_count, 10) || 0;
-    const created_by = user_id;
+    const created_by = req.user.id; // Assuming user_id comes from authenticated user
+
+    // Validate staff_ids (if provided)
+    if (staff_ids && staff_ids.length > 0) {
+      const existingAdmins = await prisma.admins.findMany({
+        where: {
+          id: { in: staff_ids }
+        },
+        select: { id: true }
+      });
+
+      if (existingAdmins.length !== staff_ids.length) {
+        const missingIds = staff_ids.filter(id => 
+          !existingAdmins.some(admin => admin.id === id)
+        );
+        return res.status(400).json({
+          error: 'Invalid staff_ids',
+          message: `The following staff IDs do not exist: ${missingIds.join(', ')}`
+        });
+      }
+    }
 
     // Create project
     const project = await prisma.projects.create({
@@ -138,56 +158,79 @@ export const createProjectWithCertificates = async (req, res, next) => {
         status: status || 'active',
         created_by,
         updated_by: created_by,
-        created_at: clock,
-        updated_at: clock,
+        created_at: new Date(),
+        updated_at: new Date(),
       }
     });
 
     // Create project CA
     const projectCA = await CertificateService.createProjectCA(project.id, project.name);
 
+    // Create admin_project associations
+    if (staff_ids && staff_ids.length > 0) {
+      await prisma.admin_projects.createMany({
+        data: staff_ids.map(staff_id => ({
+          admin_id: staff_id,
+          project_id: project.id,
+        })),
+        skipDuplicates: true
+      });
+    }
+
+    // Also associate the creator with the project if not already in staff_ids
+    /*if (!staff_ids.includes(created_by)) {
+      await prisma.admin_projects.create({
+        data: {
+          admin_id: created_by,
+          project_id: project.id,
+        }
+      });
+    }*/
+
     // Issue certificates for each PC
     const certificates = [];
-    for (let i = 1; i <= project.pc_count; i++) {
-      try {
-        const issuedCert = await CertificateService.issueCertificate(
-          project.id,
-          i,
-          days_valid // default validity
-        );
+    if (auto_create === true) {
+      for (let i = 1; i <= project.pc_count; i++) {
+        try {
+          const issuedCert = await CertificateService.issueCertificate(
+            project.id,
+            i,
+            days_valid // default validity
+          );
 
-        const certificate = await prisma.certificates.create({
-          data: {
-            serial: issuedCert.serial,
-            common_name: issuedCert.commonName,
-            pc_identifier: `PC-${i}`,
-            expires_at: issuedCert.expiresAt,
-            issued_at:clock,
-            p12_password: issuedCert.password,
-            project_id: project.id,
-            created_by,
-            updated_by: created_by,
-            status: 'active',
-            created_at: clock,
-            updated_at: clock,
-          }
-        });
+          const certificate = await prisma.certificates.create({
+            data: {
+              serial: issuedCert.serial,
+              common_name: issuedCert.commonName,
+              pc_identifier: `PC-${i}`,
+              expires_at: issuedCert.expiresAt,
+              issued_at: new Date(),
+              p12_password: issuedCert.password,
+              project_id: project.id,
+              created_by,
+              updated_by: created_by,
+              status: 'active',
+              created_at: new Date(),
+              updated_at: new Date(),
+            }
+          });
 
-        certificates.push(certificate);
+          certificates.push(certificate);
 
-        await prisma.certificate_logs.create({
-          data: {
-            certificate_id: certificate.id,
-            action: 'create',
-            action_by: created_by,
-            new_status: 'active',
-            note: `Auto-generated for project ${project.name} (PC-${i})`,
-            created_at: clock,
-          }
-        });
-      } catch (error) {
-        console.error(`Failed to create certificate for PC-${i}:`, error);
-        // Continue with next PC even if one fails
+          await prisma.certificate_logs.create({
+            data: {
+              certificate_id: certificate.id,
+              action: 'create',
+              action_by: created_by,
+              new_status: 'active',
+              note: `Auto-generated for project ${project.name} (PC-${i})`,
+              created_at: new Date(),
+            }
+          });
+        } catch (error) {
+          console.error(`Failed to create certificate for PC-${i}:`, error);
+          // Continue with next PC even if one fails
+        }
       }
     }
 
@@ -198,16 +241,19 @@ export const createProjectWithCertificates = async (req, res, next) => {
         updated_at: timeBeauty(project.updated_at),
       },
       ca_certificate: {
-      //  download_url: `/api/projects/${project.id}/ca-certificate`,
+        // download_url: `/api/projects/${project.id}/ca-certificate`,
         crl_url: `/api/projects/${project.id}/crl`
       },
       certificates: certificates.map(cert => ({
         ...cert,
         issued_at: timeBeauty(cert.issued_at),
         expires_at: timeBeauty(cert.expires_at),
-      //  download_url: `/api/certificates/${cert.serial}/download`,
-      //  revoke_url: `/api/certificates/${cert.serial}/revoke`
-      }))
+        // download_url: `/api/certificates/${cert.serial}/download`,
+        // revoke_url: `/api/certificates/${cert.serial}/revoke`
+      })),
+      associated_staff: staff_ids.concat(
+        staff_ids.includes(created_by) ? [] : [created_by]
+      )
     };
 
     response.create(result, res);
@@ -725,36 +771,43 @@ export const getCertificateDetails = async (req, res, next) => {
 export const addNewPCsWithCertificates = async (req, res) => {
   const { projectId } = req.params;
   const { count = 1 } = req.body; // Default to 1 if not specified
-  const created_by = user_id;
+  const created_by = req.user.id; // Assuming user_id comes from authenticated user
 
   try {
     // 1. Verify project exists
     const project = await prisma.projects.findUnique({
-      where: { id: parseInt(projectId) }
+      where: { id: parseInt(projectId) },
+      include: {
+        certificates: {
+          select: { pc_identifier: true }
+        }
+      }
     });
 
     if (!project) {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    // 2. Get current highest PC number
-    const lastPC = await prisma.certificates.findMany({
-      where: { project_id: parseInt(projectId) },
-      orderBy: { pc_identifier: 'desc' }
+    // 2. Check if requested count exceeds project's PC limit
+    const currentPCsCount = project.certificates.length;
+    const remainingCapacity = project.pc_count - currentPCsCount;
+
+    if (count > remainingCapacity) {
+      return res.status(400).json({ 
+        error: 'Exceeds PC limit',
+        message: `Project only has capacity for ${remainingCapacity} more PCs (current: ${currentPCsCount}, limit: ${project.pc_count})`
+      });
+    }
+
+    // 3. Get current highest PC number
+    const numbers = project.certificates.map(item => {
+      const match = item.pc_identifier.match(/PC-(\d+)/);
+      return match ? parseInt(match[1], 10) : 0;
     });
 
- const numbers = lastPC.map(item => {
-  const match = item.pc_identifier.match(/PC-(\d+)/);
-  return match ? parseInt(match[1], 10) : 0;
-});
+    const lastPCNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
 
-// Find the maximum number
-let lastPCNumber =Math.max(...numbers);
-   /* if (lastPC) {
-      lastPCNumber = parseInt(lastPC.pc_identifier.replace('PC-', ''));
-    }*/
-
-    // 3. Create new certificates
+    // 4. Create new certificates
     const newCertificates = [];
     for (let i = 1; i <= count; i++) {
       const pcNumber = lastPCNumber + i;
@@ -778,8 +831,8 @@ let lastPCNumber =Math.max(...numbers);
             created_by,
             updated_by: created_by,
             status: 'active',
-            created_at: clock,
-            updated_at: clock,
+            created_at: new Date(),
+            updated_at: new Date(),
           }
         });
 
@@ -790,13 +843,13 @@ let lastPCNumber =Math.max(...numbers);
             action_by: created_by,
             new_status: 'active',
             note: `Added new PC (${pcIdentifier}) to project ${project.name}`,
-            created_at: clock
+            created_at: new Date()
           }
         });
 
         newCertificates.push({
           ...certificate,
-       //   download_url: `/api/certificates/${certificate.serial}/download`
+          // download_url: `/api/certificates/${certificate.serial}/download`
         });
 
       } catch (error) {
@@ -805,13 +858,12 @@ let lastPCNumber =Math.max(...numbers);
       }
     }
 
-    // 4. Update project PC count
+    // 5. Update project (without changing pc_count)
     await prisma.projects.update({
       where: { id: parseInt(projectId) },
       data: { 
-        pc_count: { increment: count },
         updated_by: created_by,
-        updated_at: clock,
+        updated_at: new Date(),
       }
     });
 
@@ -822,7 +874,8 @@ let lastPCNumber =Math.max(...numbers);
       project: {
         id: project.id,
         name: project.name,
-        new_pc_count: project.pc_count + count
+        current_pc_count: currentPCsCount + newCertificates.length,
+        pc_limit: project.pc_count
       }
     });
 
@@ -887,52 +940,60 @@ export const  deletePCWithCertificate = async (req, res) => {
 export const deleteProjectPCWithCertificate = async (req, res, next) => {
   try {
     const { projectId } = req.params;
-    const created_by = user_id;
+    const created_by = req.user.id; // Assuming user_id comes from authenticated user
 
     const project = await prisma.projects.findFirst({
-      where: { id: parseInt(projectId), /*created_by*/ },
+      where: { id: parseInt(projectId) },
       include: {
         certificates: {
           select: { id: true, serial: true }
+        },
+        admin_projects: {
+          select: { id: true }
         }
       }
     });
-
-
 
     if (!project) {
       return response.notFound('Project not found', res);
     }
 
-          // 2. Delete project CA files
-      const projectCaFiles = [
-        path.join(CA_DIR, `project_${project.id}.key`),
-        path.join(CA_DIR, `project_${project.id}.crt`),
-        path.join(CA_DIR, `project_${project.id}.csr`),
-        path.join(CA_DIR, `project_${project.id}.cnf`),
-        path.join(CA_DIR, `project_${project.id}.srl`),
-        path.join(CA_DIR, `project_${project.id}.txt`),
-        path.join(CA_DIR, `project_${project.id}_combined.crt`),
-        path.join(CRL_DIR, `project_${project.id}.crl`)
-      ];
+    // Project CA files to delete
+    const projectCaFiles = [
+      path.join(CA_DIR, `project_${project.id}.key`),
+      path.join(CA_DIR, `project_${project.id}.crt`),
+      path.join(CA_DIR, `project_${project.id}.csr`),
+      path.join(CA_DIR, `project_${project.id}.cnf`),
+      path.join(CA_DIR, `project_${project.id}.srl`),
+      path.join(CA_DIR, `project_${project.id}.txt`),
+      path.join(CA_DIR, `project_${project.id}_combined.crt`),
+      path.join(CRL_DIR, `project_${project.id}.crl`)
+    ];
 
     // Start transaction to delete all related data
     await prisma.$transaction(async (tx) => {
       const certificateIds = project.certificates.map(cert => cert.id);
 
+      // 1. Delete certificate logs
       if (certificateIds.length > 0) {
-        // Delete all logs related to these certificates
         await tx.certificate_logs.deleteMany({
           where: { certificate_id: { in: certificateIds } }
         });
 
-        // Delete certificates
+        // 2. Delete certificates
         await tx.certificates.deleteMany({
           where: { id: { in: certificateIds } }
         });
       }
 
-      // Delete the project
+      // 3. Delete admin_project associations
+      if (project.admin_projects.length > 0) {
+        await tx.admin_projects.deleteMany({
+          where: { project_id: project.id }
+        });
+      }
+
+      // 4. Delete the project itself
       await tx.projects.delete({
         where: { id: project.id }
       });
@@ -940,7 +1001,7 @@ export const deleteProjectPCWithCertificate = async (req, res, next) => {
 
     // File deletion outside transaction (filesystem operations can't be rolled back)
     try {
-      // 1. Delete all certificate files (.key, .crt, .p12, .csr)
+      // Delete all certificate files (.key, .crt, .p12, .csr)
       project.certificates.forEach(cert => {
         const basePath = path.join(CERTS_DIR, cert.serial);
         ['.key', '.crt', '.p12', '.csr'].forEach(ext => {
@@ -951,8 +1012,7 @@ export const deleteProjectPCWithCertificate = async (req, res, next) => {
         });
       });
 
-
-
+      // Delete project CA files
       projectCaFiles.forEach(file => {
         if (fs.existsSync(file)) {
           fs.unlinkSync(file);
@@ -967,14 +1027,15 @@ export const deleteProjectPCWithCertificate = async (req, res, next) => {
     response.remove({ 
       count: 1, 
       data: { 
-        message: 'Project, related certificates, and all files deleted successfully',
+        message: 'Project and all related data deleted successfully',
         certificates_deleted: project.certificates.length,
+        admin_associations_deleted: project.admin_projects.length,
         files_deleted: project.certificates.length * 4 + projectCaFiles.length
       } 
     }, res);
 
   } catch (error) {
-    console.log(error)
+    console.error('Error deleting project:', error);
     response.error(error, res, next);
   }
 };

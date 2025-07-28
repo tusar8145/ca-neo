@@ -229,6 +229,131 @@ export const login = async (req, res, next) => {
     }
 };
 
+
+export const authenticate = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password || email.length < 3 || password.length < 3) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized - invalid credentials",
+            });
+        }
+
+        // Find admin with hospital and associated projects (only selected fields)
+        const admins = await prisma.admins.findMany({
+            where: {
+                email: email,
+                password: md5(password),
+            },
+            include: {
+                hospital: {
+                    select: {
+                        logo: true, 
+                        name: true, 
+                        address: true, 
+                        id: true, 
+                        primary_color: true, 
+                        sub_color_1: true, 
+                        sub_color_2: true
+                    }
+                },
+                admin_projects: {
+                    include: {
+                        project: {
+                            select: {
+                                id: true,
+                                name: true,
+                                description: true,
+                                pc_count: true,
+                                status: true,
+                                certificates: {
+                                    select: {
+                                        id: true,
+                                        serial: true,
+                                        common_name: true,
+                                        pc_identifier: true,
+                                        issued_at: true,
+                                        expires_at: true,
+                                        revoked_at: true,
+                                        status: true,
+                                        p12_password: true,
+                                        download_count: true,
+                                        revocation_reason: true,
+                                        previous_serial: true,
+                                        created_at: true,
+                                        updated_at: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (admins.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Admin not found",
+            });
+        }
+
+
+
+        const this_user = admins[0];
+        const hospital = this_user.hospital;
+
+        // Format projects with only the requested fields
+        const projects = this_user.admin_projects.map(ap => ({
+            id: ap.project.id,
+            name: ap.project.name,
+            description: ap.project.description,
+            pc_count: ap.project.pc_count,
+            status: ap.project.status,
+            certificates: ap.project.certificates
+        }));
+
+        //auth
+        let admins2 = null;
+        admins2 = await prisma.admins.findMany({
+            where: {
+                email: email,
+                password: md5(password),
+            },
+            include:{hospital:{select:{logo:true, name: true, address:true, id:true, primary_color:true, sub_color_1:true, sub_color_2:true, }}}
+        });
+
+        const authorization = jwt.sign(
+            { 
+                ...admins2[0],
+                hospital: hospital,
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_VALIDITY }
+        );
+
+        res.status(200).json({
+            user: {
+                uid: md5(this_user.id),
+                data: {
+                    displayName: this_user.name,
+                    phone: this_user.phone,
+                    email: this_user.email,
+                    role: this_user.role
+                },
+            },
+            projects: projects,
+            access_token: authorization
+        });
+
+    } catch (error) {
+        console.error('Authentication error:', error);
+        response.error(error, res, next);
+    }
+};
+
 export const refresh = async (req, res, next) => {
     try {
 

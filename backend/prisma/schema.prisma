@@ -57,6 +57,7 @@ model admins {
   created_certificates   certificates[]    @relation("certificate_created_by")
   updated_certificates   certificates[]    @relation("certificate_updated_by")
   certificate_actions    certificate_logs[] @relation("certificate_log_action_by")
+  admin_projects         admin_projects[]
 }
 
 model hospitals {
@@ -83,6 +84,7 @@ model projects {
   name           String    @unique
   description    String?
   pc_count       Int       @default(1)
+  token          String?
   status         String?
   created_at     DateTime  @default(now())
   updated_at     DateTime  @default(now())
@@ -92,7 +94,20 @@ model projects {
   creator        admins    @relation("project_created_by", fields: [created_by], references: [id])
   updater        admins    @relation("project_updated_by", fields: [updated_by], references: [id])
   certificates   certificates[]
+  admin_projects admin_projects[]
 }
+
+model admin_projects {
+  id        Int     @id @default(autoincrement())
+  admin_id  Int
+  project_id Int
+
+  admin     admins   @relation(fields: [admin_id], references: [id])
+  project   projects @relation(fields: [project_id], references: [id])
+
+  @@unique([admin_id, project_id])
+}
+
 
 model certificates {
   id                 Int               @id @default(autoincrement())

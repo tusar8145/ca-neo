@@ -25,7 +25,10 @@ import {
   DialogTitle,
   Chip,
   Tooltip,
-  CircularProgress
+  CircularProgress,
+  Checkbox,
+  FormControlLabel,
+  Autocomplete
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddIcon from '@mui/icons-material/Add';
@@ -34,19 +37,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import ComputerIcon from '@mui/icons-material/Computer';
 import DownloadIcon from '@mui/icons-material/Download';
+import PeopleIcon from '@mui/icons-material/People';
 import {createdAt, formatJapaneseDate} from '../../helpers/timeHelpers';
 import { useTheme } from '../../context/ThemeContext';
-// Utility function for date formatting
- 
 
-/**
- * Converts ISO timestamp to Japanese format without timezone conversion
- * @param {string} isoTimestamp - ISO format "YYYY-MM-DDTHH:mm:ss.SSSZ"
- * @returns {string} Japanese formatted time "YYYY年M月D日 H時mm分ss秒"
- */
- 
-
- 
 const Root = styled(FusePageSimple)(({ theme }) => ({
   '& .FusePageSimple-header': {
     backgroundColor: theme.palette.background.paper,
@@ -73,10 +67,9 @@ const StyledButton = styled(Button)(({ theme }) => ({
 
 function Projects() {  
   const { t } = useTranslation('shared-components');
-
-  const headingTitle ="Projects"
+  const headingTitle = "Projects";
   const { theme, toggleTheme } = useTheme();
-  useEffect(() => {  toggleTheme(t(headingTitle))  }, [t(headingTitle)]);
+  useEffect(() => { toggleTheme(t(headingTitle)) }, [t(headingTitle)]);
 
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
@@ -93,14 +86,15 @@ function Projects() {
     name: '',
     description: '',
     pc_count: 1,
-	days_valid:365,
-    status: 'active'
+    days_valid: 365,
+    status: 'active',
+    auto_create: false
   });
   const [formErrors, setFormErrors] = useState({
     name: false,
     description: false,
     pc_count: false,
-	days_valid: false
+    days_valid: false
   });
   const [certificatesDialogOpen, setCertificatesDialogOpen] = useState(false);
   const [selectedCertificates, setSelectedCertificates] = useState([]);
@@ -114,9 +108,13 @@ function Projects() {
   });
   const [addPcDialogOpen, setAddPcDialogOpen] = useState(false);
   const [pcCount, setPcCount] = useState(1);
+  const [hospitalStaff, setHospitalStaff] = useState([]);
+  const [selectedStaff, setSelectedStaff] = useState([]);
+  const [staffLoading, setStaffLoading] = useState(false);
 
   useEffect(() => {
     fetchProjects();
+    fetchHospitalStaff();
   }, []);
 
   const fetchProjects = async () => {
@@ -132,12 +130,32 @@ function Projects() {
     }
   };
 
+const fetchHospitalStaff = async () => {
+  setStaffLoading(true);
+  try {
+    const response = await axios.post(`${apiConfig.baseUrl}hospital-staff-manage/list`, {
+      take: 100,
+      skip: 0,
+      order: '',
+      others: {
+        role: 'staff',
+        hospital_id: 2 // Make dynamic if needed
+      }
+    });
+    setHospitalStaff(response.data.data);
+  } catch (error) {
+    console.error('Error fetching hospital staff:', error);
+  } finally {
+    setStaffLoading(false);
+  }
+};
+
   const validateForm = () => {
     const errors = {
       name: !formData.name.trim(),
       description: !formData.description.trim(),
       pc_count: formData.pc_count < 1,
-	  days_valid: formData.days_valid < 1,
+      days_valid: dialogType === 'add' ? formData.days_valid < 1 : false
     };
     setFormErrors(errors);
     return !Object.values(errors).some(Boolean);
@@ -161,24 +179,32 @@ function Projects() {
     setAnchorEl(null);
   };
 
-  const handleEditClick = () => {
-    setDialogType('edit');
-    setFormData({
-      name: selectedProject.name,
-      description: selectedProject.description,
-      pc_count: selectedProject.pc_count,
-	  days_valid: selectedProject.days_valid,
-      status: selectedProject.status
-    });
-    setFormErrors({
-      name: false,
-      description: false,
-      pc_count: false,
-	  days_valid: false
-    });
-    setOpenDialog(true);
-    handleMenuClose();
-  };
+const handleEditClick = () => {
+  setDialogType('edit');
+  setFormData({
+    name: selectedProject.name,
+    description: selectedProject.description,
+    pc_count: selectedProject.pc_count,
+    status: selectedProject.status
+  });
+  
+  // Set selected staff from project data
+  if (selectedProject.admin_projects) {
+    setSelectedStaff(selectedProject.admin_projects.map(ap => ({
+      id: ap.admin_id,
+      name: ap.admin?.name || 'Unknown',
+      ...ap.admin // Include all admin properties
+    })) || []);
+  }
+  
+  setFormErrors({
+    name: false,
+    description: false,
+    pc_count: false
+  });
+  setOpenDialog(true);
+  handleMenuClose();
+};
 
   const handleDeleteClick = () => {
     setDeleteDialogOpen(true);
@@ -205,14 +231,16 @@ function Projects() {
       name: '',
       description: '',
       pc_count: 1,
-	  days_valid: 365,
-      status: 'active'
+      days_valid: 365,
+      status: 'active',
+      auto_create: false
     });
+    setSelectedStaff([]);
     setFormErrors({
       name: false,
       description: false,
       pc_count: false,
-	  days_valid: false
+      days_valid: false
     });
     setOpenDialog(true);
   };
@@ -227,7 +255,6 @@ function Projects() {
       ...formData,
       [name]: value
     });
-    // Clear error when user starts typing
     if (formErrors[name]) {
       setFormErrors({
         ...formErrors,
@@ -236,28 +263,48 @@ function Projects() {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
-
-    const actionType = dialogType === 'add' ? 'add' : 'edit';
-    setActionLoading(prev => ({ ...prev, [actionType]: true }));
-
-    try {
-      if (dialogType === 'add') {
-        await axios.post(apiConfig.baseUrl + 'projects', formData);
-        setSuccessAlert('Project created successfully');
-      } else {
-        await axios.put(`${apiConfig.baseUrl}projects/${selectedProject.id}`, formData);
-        setSuccessAlert('Project updated successfully');
-      }
-      fetchProjects();
-      setOpenDialog(false);
-    } catch (error) {
-      setFailAlert(`Failed to ${dialogType === 'add' ? 'create' : 'update'} project`);
-    } finally {
-      setActionLoading(prev => ({ ...prev, [actionType]: false }));
-    }
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: checked
+    });
   };
+
+const handleSubmit = async () => {
+  if (!validateForm()) return;
+
+  const actionType = dialogType === 'add' ? 'add' : 'edit';
+  setActionLoading(prev => ({ ...prev, [actionType]: true }));
+
+  try {
+    if (dialogType === 'add') {
+      // Create project with staff assignments in one request
+      const projectResponse = await axios.post(apiConfig.baseUrl + 'projects', {
+        ...formData,
+        staff_ids: selectedStaff.map(staff => staff.id)
+      });
+      
+      setSuccessAlert('Project created successfully');
+    } else {
+      // Update project with staff assignments
+      const { auto_create, days_valid, ...editData } = formData;
+      await axios.put(`${apiConfig.baseUrl}projects/${selectedProject.id}`, {
+        ...editData,
+        staff_ids: selectedStaff.map(staff => staff.id)
+      });
+      
+      setSuccessAlert('Project updated successfully');
+    }
+    fetchProjects();
+    setOpenDialog(false);
+  } catch (error) {
+    setFailAlert(`Failed to ${dialogType === 'add' ? 'create' : 'update'} project`);
+    console.error('Error:', error.response?.data || error.message);
+  } finally {
+    setActionLoading(prev => ({ ...prev, [actionType]: false }));
+  }
+};
 
   const handleShowCertificates = (project) => {
     setSelectedCertificates(project.certificates);
@@ -281,7 +328,11 @@ function Projects() {
       fetchProjects();
       setAddPcDialogOpen(false);
     } catch (error) {
-      setFailAlert('Failed to add PCs to project');
+      setFailAlert('Failed to add PCs to project. Please Check PC Limit');
+      setAddPcDialogOpen(false);
+      setTimeout(() => {
+        setAddPcDialogOpen(true);
+      }, 1000);
     } finally {
       setActionLoading(prev => ({ ...prev, addPC: false }));
     }
@@ -297,7 +348,6 @@ function Projects() {
         }
       );
       
-      // Create a download link and trigger click
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -325,7 +375,7 @@ function Projects() {
       content={
         <div className="flex flex-col p-24 sm:p-40 container">
           {successAlert && (
-            <Alert severity="success" onClose={() => setSuccessAlert(null)}>
+            <Alert severity="success" className='mb-2' onClose={() => setSuccessAlert(null)}>
               {t(successAlert)}
             </Alert>
           )}
@@ -338,7 +388,7 @@ function Projects() {
           <div className="flex justify-end mb-4" style={{ padding: '16px 0' }}>
             <StyledButton
               variant="contained"
-			  className="bg-[#0A2E52BF] hover:bg-[#0A2E52] text-white"
+              className="bg-[#0A2E52BF] hover:bg-[#0A2E52] text-white"
               startIcon={actionLoading.add ? <CircularProgress size={20} color="inherit" /> : <AddIcon />}
               onClick={handleAddClick}
               disabled={actionLoading.add}
@@ -354,7 +404,8 @@ function Projects() {
                   <TableCell className="font-bold" width="5%">{t('SL')}</TableCell>
                   <TableCell className="font-bold">{t('Name')}</TableCell>
                   <TableCell className="font-bold">{t('Description')}</TableCell>
-                  <TableCell className="font-bold" width="10%">{t('PC Count')}</TableCell>
+                  <TableCell className="font-bold" width="10%">{t('PC Limit')}</TableCell>
+                  <TableCell className="font-bold" width="10%">{t('Assigned Admins')}</TableCell>
                   <TableCell className="font-bold" width="10%">{t('Status')}</TableCell>
                   <TableCell className="font-bold" width="15%">{t('Created')}</TableCell>
                   <TableCell className="font-bold" width="15%">{t('Updated')}</TableCell>
@@ -365,7 +416,7 @@ function Projects() {
               <TableBody>
                 {actionLoading.fetch ? (
                   <TableRow>
-                    <TableCell colSpan={9} align="center">
+                    <TableCell colSpan={10} align="center">
                       <CircularProgress />
                     </TableCell>
                   </TableRow>
@@ -382,6 +433,14 @@ function Projects() {
                           </Tooltip>
                         </TableCell>
                         <TableCell width="10%">{project.pc_count}</TableCell>
+                        <TableCell width="10%">
+                          <Tooltip title={project.admin_projects?.map(ap => ap.admin?.name).join(', ') || 'None'}>
+                            <div className="flex items-center">
+                              <PeopleIcon className="mr-1" fontSize="small" />
+                              {project.admin_projects?.length || 0}
+                            </div>
+                          </Tooltip>
+                        </TableCell>
                         <TableCell width="10%">
                           <Chip
                             label={t(project.status)}
@@ -416,7 +475,7 @@ function Projects() {
                     ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={9} align="center">
+                    <TableCell colSpan={10} align="center">
                       {t('No projects found')}
                     </TableCell>
                   </TableRow>
@@ -490,7 +549,7 @@ function Projects() {
                 />
                 <TextField
                   fullWidth
-                  label={t('PC Count')}
+                  label={t('PC Limit')}
                   name="pc_count"
                   type="number"
                   value={formData.pc_count}
@@ -499,25 +558,41 @@ function Projects() {
                   inputProps={{ min: 1 }}
                   margin="normal"
                   required
-                  disabled={dialogType === 'edit'}
                   error={formErrors.pc_count}
-                  helperText={formErrors.pc_count && t('PC Count must be at least 1')}
+                  helperText={formErrors.pc_count && t('PC Limit must be at least 1')}
                 />
-				<TextField
-                  fullWidth
-                  label={t('Validity Days')}
-                  name="days_valid"
-                  type="number"
-                  value={formData.days_valid}
-                  onChange={handleInputChange}
-                  variant="outlined"
-                  inputProps={{ min: 1 }}
-                  margin="normal"
-                  required
-                  disabled={dialogType === 'edit'}
-                  error={formErrors.days_valid}
-                  helperText={formErrors.days_valid && t('Validity Days must be at least 1')}
-                />
+                
+                {dialogType === 'add' && (
+                  <>
+                    <TextField
+                      fullWidth
+                      label={t('Validity Days')}
+                      name="days_valid"
+                      type="number"
+                      value={formData.days_valid}
+                      onChange={handleInputChange}
+                      variant="outlined"
+                      inputProps={{ min: 1 }}
+                      margin="normal"
+                      required
+                      error={formErrors.days_valid}
+                      helperText={formErrors.days_valid && t('Validity Days must be at least 1')}
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={formData.auto_create}
+                          onChange={handleCheckboxChange}
+                          name="auto_create"
+                          color="primary"
+                        />
+                      }
+                      label={t('Auto Create Certificates')}
+                    />
+                  </>
+                )}
+
+
                 <TextField
                   fullWidth
                   select
@@ -532,6 +607,28 @@ function Projects() {
                   <MenuItem value="active">{t('Active')}</MenuItem>
                   <MenuItem value="inactive">{t('Inactive')}</MenuItem>
                 </TextField>
+
+                <br/>
+<Autocomplete
+  multiple
+  options={hospitalStaff}
+  getOptionLabel={(option) => option.name}
+  value={selectedStaff}
+  onChange={(event, newValue) => {
+    setSelectedStaff(newValue);
+  }}
+  loading={staffLoading}
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label={t("Assign API User")}
+      placeholder="Select staff members"
+    />
+  )}
+  isOptionEqualToValue={(option, value) => option.id === value.id}
+/>
+
+
               </div>
             </DialogContent>
             <DialogActions style={{ padding: '16px 24px' }}>

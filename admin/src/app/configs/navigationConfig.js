@@ -80,8 +80,8 @@ const navigationConfig = [
     translate: 'HealthcareManage',
     type: 'collapse',
     icon: 'heroicons-outline:plus-circle',
-    auth: authRoles.common,
-    children: [
+    auth: authRoles.hospitalAssistant,
+    children: [ 
       {
         id: 'hospitals',
         title: 'Hospitals',

@@ -248,7 +248,7 @@ const locale = {
 	"Certificates": "証明書",
 	"Actions": "操作",
 	"Description": "説明",
-	"PC Count": "PC数",
+	"PC Limit": "PCの上限",
 	"SL": "番号",
 	"Add New Project": "新しいプロジェクトを追加",
 	"Update": "更新",
@@ -258,7 +258,7 @@ const locale = {
 	"Project updated successfully": "プロジェクトが正常に更新されました",
 	  "Name is required": "名前は必須です",
   "Description is required": "説明は必須です",
-  "PC Count must be at least 1": "PC数は1以上でなければなりません",
+  "PC Limit must be at least 1": "PCの上限は1以上でなければなりません",
   "Are you sure you want to delete this project?": "このプロジェクトを削除してもよろしいですか？",
   "Confirm Delete": "削除を確認",
   "Project Certificates": "プロジェクト証明書",
@@ -313,7 +313,7 @@ const locale = {
   "User Name is required": "ユーザー名は必須です",
 
    "Total Projects": "総プロジェクト数",
-  "Total PCs": "総PC数",
+  "Total PCs": "総PCの上限",
   "Active Projects": "アクティブプロジェクト",
   "Certificates Issued": "発行済み証明書",
   "Recent Activity": "最近のアクティビティ",
@@ -358,7 +358,12 @@ const locale = {
   "Certificate Actions": "証明書のアクション",
   "Project Actions": "プロジェクトのアクション",
   "users": "ユーザー",
-  "actions": "アクション"
+  "actions": "アクション",
+  "Failed to add PCs to project. Please check PC limit": "プロジェクトにPCを追加できませんでした。PCの上限を確認してください。",
+  "Add PC": "PCを追加",
+  "Download Certificates": "証明書をダウンロード",
+  "Auto Create Certificates": "証明書を自動作成",
+  "Assign API User": "APIユーザーを割り当て",
 };
 export default locale;
 
