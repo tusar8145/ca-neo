@@ -11,6 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import archiver from 'archiver';
+import Hashids from 'hashids';
 
 const clock = isoTime()
  
@@ -21,6 +22,7 @@ const CERTS_DIR = path.join(__dirname, '../../certs');
 const DOWNLOAD_DIR = path.join(__dirname, '../../downloads');
 const CA_DIR = path.join(__dirname, '../../ca');
 const CRL_DIR = path.join(__dirname, '../../crl');
+const hashids = new Hashids('your-salt', 16);
 
 // Helper function to validate project ownership
 const validateProjectOwnership = async (projectId, userId) => {
@@ -739,10 +741,15 @@ export const getCertificateDetails = async (req, res, next) => {
       return response.notFound('Certificate not found or access denied', res);
     }
 
+
     const verification = await CertificateService.verifyCertificate(
       certificate.project_id,
       serial
     );
+ delete certificate.id;
+    if (certificate && certificate.project && certificate.project.id) {
+  certificate.project.id = hashids.encode(certificate.project.id);
+}
 
     const result = {
       ...certificate,
@@ -769,7 +776,12 @@ export const getCertificateDetails = async (req, res, next) => {
 
 // controllers/CertificateController.js
 export const addNewPCsWithCertificates = async (req, res) => {
-  const { projectId } = req.params;
+  let { projectId } = req.params;
+
+  if(projectId.toString().length==16){
+    projectId=hashids.decode(projectId)
+  }
+
   const { count = 1 } = req.body; // Default to 1 if not specified
   const created_by = req.user.id; // Assuming user_id comes from authenticated user
 
@@ -847,8 +859,14 @@ export const addNewPCsWithCertificates = async (req, res) => {
           }
         });
 
+        let { id, ...rest } = certificate;
         newCertificates.push({
-          ...certificate,
+          ...rest,
+          // download_url: `/api/certificates/${certificate.serial}/download`
+        });
+
+        newCertificates.push({
+          ...rest,
           // download_url: `/api/certificates/${certificate.serial}/download`
         });
 
@@ -872,7 +890,7 @@ export const addNewPCsWithCertificates = async (req, res) => {
       added_count: newCertificates.length,
       certificates: newCertificates,
       project: {
-        id: project.id,
+       // id: project.id,
         name: project.name,
         current_pc_count: currentPCsCount + newCertificates.length,
         pc_limit: project.pc_count

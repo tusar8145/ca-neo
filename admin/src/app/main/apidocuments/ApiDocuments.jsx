@@ -77,14 +77,13 @@ const ApiDocumentation = () => {
           },
           "projects": [
             {
-              "id": 45,
+              "id": "g9XaENQYAAQGLoYb",
               "name": "Sample",
               "description": "Sample",
               "pc_count": 10,
               "status": "active",
               "certificates": [
                 {
-                  "id": 232,
                   "serial": "488ef08284a7b06f",
                   "common_name": "PC-1-Project-45",
                   "pc_identifier": "PC-1",
@@ -125,7 +124,7 @@ const ApiDocumentation = () => {
           "Authorization": "Bearer <token>"
         },
         pathParams: {
-          projectId: 45
+          projectId: "g9XaENQYAAQGLoYb"
         },
         body: {
           count: 1
@@ -138,7 +137,6 @@ const ApiDocumentation = () => {
           "added_count": 1,
           "certificates": [
               {
-                  "id": 235,
                   "serial": "6646efedfd229e97",
                   "common_name": "PC-4-Project-45",
                   "pc_identifier": "PC-4",
@@ -158,7 +156,6 @@ const ApiDocumentation = () => {
               }
           ],
           "project": {
-              "id": 45,
               "name": "t1",
               "current_pc_count": 4,
               "pc_limit": 10
@@ -199,7 +196,7 @@ const ApiDocumentation = () => {
             "p12_password": "011c76989f7aeadd7cde2cf0",
             "project": {
               "name": "dd",
-              "id": 28
+              "id":  "g9XaENQYAAQGLoYb",
             },
             "logs": [
               {

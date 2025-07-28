@@ -14,6 +14,7 @@ import path  from 'path';
 import { fileURLToPath } from 'url';
 import { IncomingForm } from 'formidable';
 import  multer   from 'multer';
+import Hashids from 'hashids';
 
 const storage = multer.diskStorage({
  destination: function (req, file, cb) {
@@ -25,6 +26,7 @@ const storage = multer.diskStorage({
  }
 })
 
+const hashids = new Hashids('your-salt', 16);
 
 const upload = multer({ storage: storage })
 
@@ -270,7 +272,6 @@ export const authenticate = async (req, res, next) => {
                                 status: true,
                                 certificates: {
                                     select: {
-                                        id: true,
                                         serial: true,
                                         common_name: true,
                                         pc_identifier: true,
@@ -307,7 +308,7 @@ export const authenticate = async (req, res, next) => {
 
         // Format projects with only the requested fields
         const projects = this_user.admin_projects.map(ap => ({
-            id: ap.project.id,
+            id: hashids.encode(ap.project.id),
             name: ap.project.name,
             description: ap.project.description,
             pc_count: ap.project.pc_count,
