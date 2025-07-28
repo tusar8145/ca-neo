@@ -364,7 +364,7 @@ const locale = {
   "Download Certificates": "証明書をダウンロード",
   "Auto Create Certificates": "証明書を自動作成",
   "Assign API User": "APIユーザーを割り当て",
-  "Assigned Admins": "割り当てられた管理者"
+  "Assigned API Users": "割り当てられたAPIユーザー",
 };
 export default locale;
 

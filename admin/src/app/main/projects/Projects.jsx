@@ -405,7 +405,7 @@ const handleSubmit = async () => {
                   <TableCell className="font-bold">{t('Name')}</TableCell>
                   <TableCell className="font-bold">{t('Description')}</TableCell>
                   <TableCell className="font-bold" width="10%">{t('PC Limit')}</TableCell>
-                  <TableCell className="font-bold" width="10%">{t('Assigned Admins')}</TableCell>
+                  <TableCell className="font-bold" width="10%">{t('Assigned API Users')}</TableCell>
                   <TableCell className="font-bold" width="10%">{t('Status')}</TableCell>
                   <TableCell className="font-bold" width="15%">{t('Created')}</TableCell>
                   <TableCell className="font-bold" width="15%">{t('Updated')}</TableCell>
