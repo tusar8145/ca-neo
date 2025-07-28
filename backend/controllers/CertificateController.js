@@ -751,8 +751,8 @@ export const getCertificateDetails = async (req, res, next) => {
   certificate.project.id = hashids.encode(certificate.project.id);
 }
 
-    const result = {
-      ...certificate,
+    const result = { 
+       ...certificate,
       issued_at: timeBeauty(certificate.issued_at),
       expires_at: timeBeauty(certificate.expires_at),
       created_at: timeBeauty(certificate.created_at),

@@ -10,7 +10,8 @@ router.post("/hospital-manage/update", auth,   HospitalController.manage_update)
 router.post("/hospital-manage/logo",    HospitalController.manage_logo);
 router.get("/hospital-manage/image/:image",    HospitalController.image);
 router.post("/hospital-manage/auth",    auth);
-export { router as HospitalRoute };  
+export { router as HospitalRoute }; 
+// 
 
 
 
