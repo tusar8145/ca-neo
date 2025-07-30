@@ -54,8 +54,8 @@ function SignInPage() {
 		console.log('success...')
       } catch (error) {
 		console.log(error,'????????????')
-        if (error.code === 'ERR_CERT_AUTHORITY_INVALID' || 
-            error.message.includes('certificate')) {
+       // if (error.code === 'ERR_CERT_AUTHORITY_INVALID' || 
+       //     error.message.includes('certificate')) {
           // Open new tab with the connection test URL
           const newTab = window.open(`${apiConfig.baseUrl}/connection-test`, '_blank');
           
@@ -69,7 +69,7 @@ function SignInPage() {
               }
             }, 2000);
           }
-        }
+       // }
       }
     };
 
