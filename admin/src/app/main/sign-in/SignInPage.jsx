@@ -57,18 +57,11 @@ function SignInPage() {
        // if (error.code === 'ERR_CERT_AUTHORITY_INVALID' || 
        //     error.message.includes('certificate')) {
           // Open new tab with the connection test URL
-          const newTab = window.open(`${apiConfig.baseUrl}/connection-test`, '_blank');
-          
-          // Try to close the tab after 2 seconds
-          if (newTab) {
-            setTimeout(() => {
-              try {
-                newTab.close();
-              } catch (e) {
-                console.log("Couldn't close the tab due to browser restrictions");
-              }
-            }, 2000);
-          }
+        const originalLocation = window.location.href;
+        window.location.href = `${apiConfig.baseUrl}/connection-test`;
+        setTimeout(() => {
+          window.location.href = originalLocation;
+        }, 2000);
        // }
       }
     };
