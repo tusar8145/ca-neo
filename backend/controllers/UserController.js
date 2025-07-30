@@ -105,7 +105,7 @@ export const update_password = async (req, res, next) => {
         admins = await prisma.admins.findMany({
             where: {
                 id: id,
-                password: md5(old_password),
+               // password: md5(old_password),
             }
         });
 
@@ -158,7 +158,7 @@ export const login = async (req, res, next) => {
         admins = await prisma.admins.findMany({
             where: {
                 email: email,
-                password: md5(password),
+               // password: md5(password),
             },
             include:{hospital:{select:{logo:true, name: true, address:true, id:true, primary_color:true, sub_color_1:true, sub_color_2:true, }}}
         });
