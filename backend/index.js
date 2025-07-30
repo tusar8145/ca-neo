@@ -39,7 +39,7 @@ app.use((req, res, next) => {
 });
 
 // Add this new route before your other routes
-app.get('/api//connection-test', (req, res) => {
+app.get('/api/connection-test', (req, res) => {
   const html = `
     <!DOCTYPE html>
     <html>
