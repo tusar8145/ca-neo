@@ -41,6 +41,13 @@ import PeopleIcon from '@mui/icons-material/People';
 import {createdAt, formatJapaneseDate} from '../../helpers/timeHelpers';
 import { useTheme } from '../../context/ThemeContext';
 
+
+import { useAppSelector } from 'app/store/hooks';
+import { selectUserRole, selectUser } from '../../auth/user/store/userSlice';
+
+
+    
+
 const Root = styled(FusePageSimple)(({ theme }) => ({
   '& .FusePageSimple-header': {
     backgroundColor: theme.palette.background.paper,
@@ -113,6 +120,8 @@ function Projects() {
   const [hospitalStaff, setHospitalStaff] = useState([]);
   const [selectedStaff, setSelectedStaff] = useState([]);
   const [staffLoading, setStaffLoading] = useState(false);
+
+  const user = useAppSelector(selectUser);
 
   useEffect(() => {
     fetchProjects();
@@ -391,6 +400,7 @@ const handleSubmit = async () => {
             </Alert>
           )}
 
+{user?.role =='superAdmin' &&
         <div className="flex justify-end mb-4" style={{ padding: '16px 0' }}>
           <StyledButton
             variant="contained"
@@ -402,7 +412,7 @@ const handleSubmit = async () => {
             {actionLoading.add ? t('Creating...') : t('Add New Project')}
           </StyledButton>
         </div>
-
+}
           <TableContainer component={Paper} className="shadow-md rounded-lg">
             <Table className="min-w-full">
               <TableHead className="bg-gray-100">
