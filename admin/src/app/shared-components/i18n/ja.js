@@ -97,7 +97,7 @@ const locale = {
 	'ID': 'ID',
 	'Logo': 'ロゴ',
 	'Address': '住所',
-	'Assistant Name': '病院管理者',
+	'Assistant Name': '管理者名',
 	'Assistant Phone': '管理者電話番号',
 	'Assistant Email': '管理者メール',
 	'Assistant Password': '管理者パスワード',
