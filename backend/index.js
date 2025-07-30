@@ -40,6 +40,7 @@ app.use((req, res, next) => {
 
 // Add this new route before your other routes
 app.get('/api/connection-test', (req, res) => {
+  const referer = req.get('Referer') || req.headers.referer || '/';
   const html = `
     <!DOCTYPE html>
     <html>
@@ -50,7 +51,7 @@ app.get('/api/connection-test', (req, res) => {
           font-family: Arial, sans-serif;
           margin: 0;
           padding: 0;
-           background: rgba(76, 175, 80, 0.9);
+          background: rgba(76, 175, 80, 0.9);
           display: flex;
           justify-content: center;
           align-items: center;
@@ -97,10 +98,59 @@ app.get('/api/connection-test', (req, res) => {
         button:hover {
           background: #45a049;
         }
+        .countdown {
+          margin: 10px 0;
+          font-size: 14px;
+          color: #666;
+        }
       </style>
+      <script>
+        // Get the referer URL from server-side variable
+        const refererUrl = "${referer}";
+        let secondsLeft = 2;
+        
+        // Countdown function
+        function updateCountdown() {
+          document.getElementById('countdown').textContent = 
+            'Redirecting back in ' + secondsLeft + ' second' + (secondsLeft !== 1 ? 's' : '') + '...';
+          secondsLeft--;
+          
+          if (secondsLeft < 0) {
+            try {
+              // First try to go back in history
+              if (window.history.length > 1) {
+                window.history.back();
+              } 
+              // Fallback to redirect if no history
+              else if (refererUrl) {
+                window.location.href = refererUrl;
+              }
+            } catch (e) {
+              document.getElementById('manual-redirect').style.display = 'block';
+            }
+          } else {
+            setTimeout(updateCountdown, 1000);
+          }
+        }
+        
+        // Start countdown when page loads
+        window.onload = function() {
+          updateCountdown();
+        };
+      </script>
     </head>
     <body>
       <div class="banner">Backend Connected | バックエンドに接続されました</div>
+      <div class="container">
+        <div class="success">✓</div>
+        <h1>Backend Connected Successfully</h1>
+        <p id="countdown" class="countdown">Redirecting back in 2 seconds...</p>
+        <div id="manual-redirect" style="display: none;">
+          <p>Automatic redirect failed.</p>
+          <button onclick="window.history.back()">Go Back</button>
+          ${referer ? `<button onclick="window.location.href='${referer}'">Return to Site</button>` : ''}
+        </div>
+      </div>
     </body>
     </html>
   `;
