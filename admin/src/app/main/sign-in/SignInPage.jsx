@@ -51,7 +51,7 @@ function SignInPage() {
 		// Clean up after 5 seconds
 		const timer = setTimeout(() => {
 			document.body.removeChild(iframe);
-		}, 20000);
+		}, 1000);
 
 		return () => {
 			clearTimeout(timer);
