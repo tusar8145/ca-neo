@@ -48,9 +48,25 @@ app.get('/api/connection-test', (req, res) => {
       <style>
         body {
           font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          background-color: transparent;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+        }
+        .banner {
+          position: fixed;
+          top: 0;
+          width: 100%;
+          background: rgba(76, 175, 80, 0.9);
+          color: white;
+          padding: 15px 0;
+          font-size: 18px;
           text-align: center;
-          padding: 50px;
-          background-color: #f5f5f5;
+          font-weight: bold;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
         .container {
           background: white;
@@ -58,12 +74,15 @@ app.get('/api/connection-test', (req, res) => {
           border-radius: 10px;
           box-shadow: 0 2px 10px rgba(0,0,0,0.1);
           max-width: 500px;
-          margin: 0 auto;
+          text-align: center;
         }
         .success {
           color: #4CAF50;
-          font-size: 24px;
-          margin-bottom: 20px;
+          font-size: 36px;
+          margin-bottom: 10px;
+        }
+        h1 {
+          margin-top: 0;
         }
         button {
           background: #4CAF50;
@@ -81,17 +100,13 @@ app.get('/api/connection-test', (req, res) => {
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="success">✓</div>
-        <h1>Backend Connected Successfully</h1>
-        <p>You can safely close this tab now.</p>
-        <button onclick="window.close()">Close This Tab</button>
-      </div>
+      <div class="banner">Backend Connected | バックエンドに接続されました</div>
     </body>
     </html>
   `;
   res.send(html);
 });
+
 
 
 app.use(SYSVERSION, UserRoute);
