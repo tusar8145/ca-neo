@@ -16,64 +16,79 @@ import AwsSignInTab from './tabs/AwsSignInTab';
 import backgroundImage from './background.jpg';
 import logo from './logo.svg';
 import apiConfig from 'src/app/configs/apiConfig';
+import axios from 'axios';
 
 const tabs = [
-	{
-		id: 'jwt',
-		title: 'JWT',
-		logo: 'assets/images/logo/jwt.svg',
-		logoClass: 'h-40 p-4 bg-black rounded-12'
-	},
-	{
-		id: 'firebase',
-		title: 'Firebase',
-		logo: 'assets/images/logo/firebase.svg',
-		logoClass: 'h-40'
-	},
-	{
-		id: 'aws',
-		title: 'AWS',
-		logo: 'assets/images/logo/aws-amplify.svg',
-		logoClass: 'h-40'
-	}
+  {
+    id: 'jwt',
+    title: 'JWT',
+    logo: 'assets/images/logo/jwt.svg',
+    logoClass: 'h-40 p-4 bg-black rounded-12'
+  },
+  {
+    id: 'firebase',
+    title: 'Firebase',
+    logo: 'assets/images/logo/firebase.svg',
+    logoClass: 'h-40'
+  },
+  {
+    id: 'aws',
+    title: 'AWS',
+    logo: 'assets/images/logo/aws-amplify.svg',
+    logoClass: 'h-40'
+  }
 ];
 
 function SignInPage() {
-	const [selectedTabId, setSelectedTabId] = useState(tabs[0].id);
+  const [selectedTabId, setSelectedTabId] = useState(tabs[0].id);
 
-	useEffect(() => {
-		// Create hidden iframe to check backend connection
-		const iframe = document.createElement('iframe');
-		iframe.src = `${apiConfig.baseUrl}/connection-test`;
-		//iframe.style.display = 'none';
-		document.body.appendChild(iframe);
-		
-		// Clean up after 5 seconds
-		const timer = setTimeout(() => {
-			document.body.removeChild(iframe);
-		}, 1000);
+  useEffect(() => {
+    const checkBackendConnection = async () => {
+      try {
+        await axios.get(`${apiConfig.baseUrl}connection-test`, {
+          // Bypass SSL verification for self-signed certificates in development
+         /* httpsAgent: new (require('https').Agent)({  
+            rejectUnauthorized: process.env.NODE_ENV === 'production'
+          })*/
+        });
+		console.log('success...')
+      } catch (error) {
+		console.log(error,'????????????')
+        if (error.code === 'ERR_CERT_AUTHORITY_INVALID' || 
+            error.message.includes('certificate')) {
+          // Open new tab with the connection test URL
+          const newTab = window.open(`${apiConfig.baseUrl}/connection-test`, '_blank');
+          
+          // Try to close the tab after 2 seconds
+          if (newTab) {
+            setTimeout(() => {
+              try {
+                newTab.close();
+              } catch (e) {
+                console.log("Couldn't close the tab due to browser restrictions");
+              }
+            }, 2000);
+          }
+        }
+      }
+    };
 
-		return () => {
-			clearTimeout(timer);
-			if (document.body.contains(iframe)) {
-				document.body.removeChild(iframe);
-			}
-		};
-	}, []);
+    checkBackendConnection();
+  }, []);
 
-	function handleSelectTab(id) {
-		setSelectedTabId(id);
-	}
+  function handleSelectTab(id) {
+    setSelectedTabId(id);
+  }
 
-	return (
-		<div className="flex min-w-0 flex-1 flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start"  
-			style={{
-				backgroundImage: `url(${backgroundImage})`,
-				backgroundSize: 'cover',
-				backgroundPosition: 'center',
-				backgroundRepeat: 'no-repeat',
-				backgroundAttachment: 'fixed', 
-			}}>
+  return (
+    <div className="flex min-w-0 flex-1 flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start"  
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed', 
+      }}>
 			<Paper className="h-full w-full px-16 py-8 ltr:border-r-1 rtl:border-l-1 sm:h-auto sm:w-auto sm:rounded-2xl sm:p-48 sm:shadow md:flex md:h-full md:w-1/2 md:items-center md:justify-end md:rounded-none md:p-64 md:shadow-none"
 				style={{ background: 'transparent', borderRightWidth: 0 }}>
 				<CardContent className="mx-auto w-full max-w-320 sm:mx-0 sm:w-320" style={{ background: 'white', borderRadius: '5%' }}>
