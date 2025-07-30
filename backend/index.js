@@ -50,7 +50,7 @@ app.get('/api/connection-test', (req, res) => {
           font-family: Arial, sans-serif;
           margin: 0;
           padding: 0;
-          background-color: transparent;
+           background: rgba(76, 175, 80, 0.9);
           display: flex;
           justify-content: center;
           align-items: center;
