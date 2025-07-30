@@ -181,13 +181,18 @@ export const login = async (req, res, next) => {
             let this_user = admins[0]
 
             const authorization = jwt.sign(
-                { ...admins[0],  ...this_user.hospital_id?{"hospital":{id:this_user.hospital_id, name:hospital?.name, logo:hospital?.logo, address:hospital?.address, primary_color:hospital?.primary_color, sub_color_1:hospital?.sub_color_1, sub_color_2:hospital?.sub_color_2, }}:{"hospital":this_user?.hospital,}, },
+                { ...admins[0],  
+                    ...this_user.role=="superAdmin"? {"hospital":{}} :{
+                        ...this_user.hospital_id?{"hospital":{id:this_user.hospital_id, name:hospital?.name, logo:hospital?.logo, address:hospital?.address, primary_color:hospital?.primary_color, sub_color_1:hospital?.sub_color_1, sub_color_2:hospital?.sub_color_2, }}:
+                        {"hospital":this_user?.hospital,},
+                    }
+                },
                 process.env.JWT_SECRET,
                 { expiresIn: process.env.JWT_VALIDITY }
             );           
 
             const url = new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
-            let logo = this_user.photo || 'user.png'
+            let logo = this_user.photo || 'brian-hughes.jpg'
             res.status(200).json(
                 {
 
@@ -210,8 +215,10 @@ export const login = async (req, res, next) => {
                                 "apps.contacts"
                             ]
                         },
+                            ...this_user.role=="superAdmin"? {"hospital":{}} :{
+                            ...this_user.hospital_id?{"hospital":{id:this_user.hospital_id, name:hospital?.name, logo:hospital?.logo, address:hospital?.address, primary_color:hospital?.primary_color, sub_color_1:hospital?.sub_color_1, sub_color_2:hospital?.sub_color_2,}}:{"hospital":this_user?.hospital,},
+                        },
                         
-                        ...this_user.hospital_id?{"hospital":{id:this_user.hospital_id, name:hospital?.name, logo:hospital?.logo, address:hospital?.address, primary_color:hospital?.primary_color, sub_color_1:hospital?.sub_color_1, sub_color_2:hospital?.sub_color_2,}}:{"hospital":this_user?.hospital,},
                         "title": "hi"
                     },
                     "access_token": authorization
@@ -230,6 +237,7 @@ export const login = async (req, res, next) => {
         response.error(error,res,next)
     }
 };
+
 
 
 export const authenticate = async (req, res, next) => {

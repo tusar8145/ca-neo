@@ -35,6 +35,10 @@ const ExpiringCertificatesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [daysThreshold, setDaysThreshold] = useState(1000);
 
+  const { hospital, toggleHospital } = useTheme();
+  axios.defaults.headers.common['X-ClientId-Header'] = hospital?.id || null;
+
+
   useEffect(() => {
     const fetchExpiringCertificates = async () => {
       try {
@@ -53,7 +57,7 @@ const ExpiringCertificatesPage = () => {
     };
 
     fetchExpiringCertificates();
-  }, [daysThreshold]);
+  }, [daysThreshold, hospital]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);

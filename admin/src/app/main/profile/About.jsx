@@ -196,12 +196,12 @@ function AboutTab() {
 						className="w-full mb-32"
 					>
 						<div className="px-32 pt-24">
-							<Typography className="text-2xl font-semibold leading-tight">{t('Hospital Info')}</Typography>
+							<Typography className="text-2xl font-semibold leading-tight">{t('Client Info')}</Typography>
 						</div>
 
 						<CardContent className="px-32 py-24">
 							<div className="mb-24">
-								<Typography className="font-semibold mb-4 text-15">{t('Hospital Name')}</Typography>
+								<Typography className="font-semibold mb-4 text-15">{t('Client Name')}</Typography>
 								<Typography>{work.HospitalName}</Typography>
 							</div>
 

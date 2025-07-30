@@ -14,7 +14,7 @@ const StaffConfig = {
 	settings: {
 		layout: {}
 	},
-	auth    : authRoles.hospitalAssistant,
+	auth    : authRoles.admin,
 	routes: [
 		{
 			path: 'staff-management',

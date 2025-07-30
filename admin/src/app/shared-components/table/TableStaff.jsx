@@ -216,7 +216,7 @@ if(get_global_filter){
         const response = await axios.post(apiConfig.hospitalStaffManageList +'?take=' + pagination.pageSize + '&&skip=' + (10 * pagination.pageIndex)+ '&&order='+order, { filter });
         let new_data = []
         let get_data = response.data.data
- 
+
             let keys = [];
             let values = [];
  
@@ -224,9 +224,9 @@ if(get_global_filter){
                   let new_key = keyConfig[j]
                   keys[j]=new_key.name
                   values[j] = [];
-                  for(let k=0; k<get_data?.length; k++){
+                  for(let k=0; k<get_data?.data?.length; k++){
                         
-                          let ob=get_data[k]
+                          let ob=get_data.data[k]
                           
                           if(ob?.childs?.length>0){
                             ob=ob.childs[0]
@@ -236,7 +236,6 @@ if(get_global_filter){
                   }
               }
     
-    
             const result = values[0].map((_, index) => {
               let obj = {};
               keys.forEach((key, keyIndex) => {
@@ -245,7 +244,7 @@ if(get_global_filter){
               return obj;
             });
 
- 
+
         setData(result);
 
 

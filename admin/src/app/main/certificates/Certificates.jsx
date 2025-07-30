@@ -54,6 +54,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useTheme } from '../../context/ThemeContext';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+ 
 
 const Root = styled(FusePageSimple)(({ theme }) => ({
   '& .FusePageSimple-header': {
@@ -108,14 +109,19 @@ function Certificates() {
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedPassword, setCopiedPassword] = useState(null);
 
+  const { hospital, toggleHospital } = useTheme();
+  axios.defaults.headers.common['X-ClientId-Header'] = hospital?.id || null;
+
+
+
   useEffect(() => {
     fetchProjects();
     fetchCertificates();
-  }, []);
+  }, [hospital]);
 
   useEffect(() => {
     fetchCertificates();
-  }, [selectedProject, selectedStatus]);
+  }, [selectedProject, selectedStatus, hospital]);
 
   const fetchProjects = async () => {
     try {

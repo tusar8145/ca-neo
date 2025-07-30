@@ -29,6 +29,7 @@ import {
 import {createdAt, formatJapaneseDate} from '../../helpers/timeHelpers';
 import { useTheme } from '../../context/ThemeContext';
 
+
 const DashboardCard = styled(Card)(({ theme }) => ({
   height: '100%',
   display: 'flex',
@@ -38,6 +39,7 @@ const DashboardCard = styled(Card)(({ theme }) => ({
     transform: 'scale(1.02)'
   }
 }));
+
 
 const ProjectStatusChip = styled(Chip)(({ theme, status }) => ({
   backgroundColor: status === 'active' ? theme.palette.success.light : theme.palette.error.light,
@@ -50,10 +52,13 @@ function ProjectsDashboard() {
   const [projects, setProjects] = useState([]);
   const [error, setError] = useState(null);
 
+
   const headingTitle ="Dashboard"
   const { theme, toggleTheme } = useTheme();
   useEffect(() => {  toggleTheme(t(headingTitle))  }, [t(headingTitle)]);
 
+  const { hospital, toggleHospital } = useTheme();
+  axios.defaults.headers.common['X-ClientId-Header'] = hospital?.id || null; 
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -70,7 +75,7 @@ function ProjectsDashboard() {
     };
 
     fetchProjects();
-  }, []);
+  }, [hospital]);
 
   if (loading) {
     return (

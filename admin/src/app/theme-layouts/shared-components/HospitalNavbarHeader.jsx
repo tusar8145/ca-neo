@@ -150,7 +150,7 @@ function HospitalNavbarHeader() {
 	const user = useAppSelector(selectUser);
 	return (
 		<Root className="user relative flex flex-col items-center justify-center p-16 pb-14 shadow-0">
-		{/*this_user?.role=='admin' && 
+		{this_user?.role=='superAdmin' && 
 			<div className='view-as'>
 				<Typography className="mb-6 username whitespace-nowrap text-14 font-medium  flex items-left pl-10 ">
 				<FuseSvgIcon className="text-48" size={24} color="action" >heroicons-outline:eye</FuseSvgIcon>	 {t('View as')+':'}
@@ -168,7 +168,7 @@ function HospitalNavbarHeader() {
 							label="Hos"
 							onChange={handleChange}
 						>
-							<MenuItem value="*">{t('ALL Hospital')}</MenuItem>
+							<MenuItem value="*">{t('All Clients')}</MenuItem>
 
 							{hospitals.map((_item) => (
 								<MenuItem value={_item.id}>{_item.sort_name}</MenuItem>
@@ -181,8 +181,8 @@ function HospitalNavbarHeader() {
 				</div>
 
 
-			</div>			
-		*/}
+			</div>	}		
+		
 
 
 	</Root>

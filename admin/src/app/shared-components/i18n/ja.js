@@ -34,7 +34,7 @@ const locale = {
 	'Are you sure to save?': '本当に保存しますか?',
 	'Are you sure to create?': '本当に作成しますか?',
 	'Are you sure you want to delete this?': 'これを削除してもよろしいですか?',
-	'ALL Hospital': 'すべての病院',
+	'All Clients': 'すべてのクライアント',
 	'Data upload failed': 'データのアップロードに失敗しました',
 	'Invalid File': '無効なファイル',
 	'Data replacement': 'データの置き換え',
@@ -91,7 +91,7 @@ const locale = {
 	'Admin': '管理者',
 	'Hospital Assistant': '病院助手',
 	'Hospital Staff': '病院スタッフ',
-	'Hospital Management': '病院の管理',
+	'Client Management': 'クライアント管理',
 
 	'Create': '+新しい',
 	'ID': 'ID',
@@ -204,11 +204,11 @@ const locale = {
 	'Submit': '送信',
 
 	'General Information': '一般情報',
-	'Hospital Info': '病院情報',
+	"Client Info": "クライアント情報",
 
 
 	'Phone': '電話',
-	'Hospital Name': '病院名',
+	"Client Name": "クライアント名",
 	'About': 'について',
 
 	'DPC Disease Classification': 'DPC 疾患分類',
@@ -365,6 +365,14 @@ const locale = {
   "Auto Create Certificates": "証明書を自動作成",
   "Assign API User": "APIユーザーを割り当て",
   "Assigned API Users": "割り当てられたAPIユーザー",
+    "Certificates Updated": "証明書を更新しました",
+  "Projects Updated": "プロジェクトを更新しました",
+    "Assign API User": "APIユーザーを割り当て",
+  "No staff available": "利用可能なスタッフがいません",
+  "Select staff members": "スタッフを選択してください",
+  "No staff members found for this hospital": "この病院に該当するスタッフが見つかりません",
+  "No staff members available": "利用可能なスタッフがいません",
+  "No options": "選択肢がありません",
 };
 export default locale;
 

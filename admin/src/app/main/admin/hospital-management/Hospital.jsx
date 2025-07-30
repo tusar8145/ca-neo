@@ -38,7 +38,7 @@ function Hospital() {
 	let user=User()
  
 	let tableName='hospitals'
-	let headingTitle='Hospital Management'
+	let headingTitle='Client Management'
  
 	let keyConfig=[
 		{name:'logo', type:'String', header:'Logo',edit:0, validate:{required:0}, globalF:0},

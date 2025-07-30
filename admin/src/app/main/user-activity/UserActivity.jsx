@@ -63,7 +63,7 @@ function UserActivityPage() {
   const { t } = useTranslation('shared-components');
 
     const headingTitle ="User Activity"
-    const { theme, toggleTheme } = useTheme();
+    const {  hospital, theme, toggleTheme } = useTheme();
     useEffect(() => {  toggleTheme(t(headingTitle))  }, [t(headingTitle)]);
   
 
@@ -73,6 +73,10 @@ function UserActivityPage() {
   const [tabValue, setTabValue] = useState(0);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+ 
+  axios.defaults.headers.common['X-ClientId-Header'] = hospital?.id || null;
+
 
   useEffect(() => {
     const fetchActivityData = async () => {
@@ -89,7 +93,7 @@ function UserActivityPage() {
     };
 
     fetchActivityData();
-  }, []);
+  }, [hospital]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -125,14 +129,14 @@ function UserActivityPage() {
   }
 
 
-
+ 
 
   return ( 
     <Root>
       
 
       {/* Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
+      <Grid container spacing={3} sx={{ mb: 3 }} >
         <Grid item xs={12} sm={6} md={3}>
           <ActivityCard>
             <CardContent>
@@ -205,7 +209,7 @@ function UserActivityPage() {
           </ActivityCard>
         </Grid>
       </Grid>
-
+ 
       <Paper sx={{ mb: 3 }}>
         <Tabs value={tabValue} onChange={handleTabChange} variant="fullWidth">
           <Tab label={t('User List')} />
@@ -333,65 +337,98 @@ function UserActivityPage() {
           />
         </Paper>
       )}
-
-      {tabValue === 2 && (
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <ActivityCard>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  {t('Actions by Role')}
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                <List>
-                  {Object.entries(data.stats.by_role).map(([role, count]) => (
-                    <ListItem key={role} divider>
-                      <ListItemText
-                        primary={t(role)}
-                        secondary={`${count} ${t('users')}`}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </CardContent>
-            </ActivityCard>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <ActivityCard>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  {t('Activity Distribution')}
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                <List>
-                  <ListItem divider>
-                    <ListItemAvatar>
-                      <Avatar>
-                        <CertificateIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={t('Certificate Actions')}
-                      secondary={`${data.users.reduce((sum, user) => sum + user.certificate_logs, 0)} ${t('actions')}`}
-                    />
-                  </ListItem>
-                  <ListItem divider>
-                    <ListItemAvatar>
-                      <Avatar>
-                        <ProjectIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={t('Project Actions')}
-                      secondary={`${data.users.reduce((sum, user) => sum + user.projects_created + user.projects_updated, 0)} ${t('actions')}`}
-                    />
-                  </ListItem>
-                </List>
-              </CardContent>
-            </ActivityCard>
-          </Grid>
-        </Grid>
-      )}
+ 
+{tabValue === 2 && (
+  <Grid container spacing={3}>
+    <Grid item xs={12} md={6}>
+      <ActivityCard>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            {t('Actions by Role')}
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          <List>
+            {Object.entries(data.stats.by_role).map(([role, count]) => (
+              <ListItem key={role} divider>
+                <ListItemText
+                  primary={t(role)}
+                  secondary={`${count} ${t('users')}`}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </CardContent>
+      </ActivityCard>
+    </Grid>
+    <Grid item xs={12} md={6}>
+      <ActivityCard>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            {t('Activity Distribution')}
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          <List>
+            <ListItem divider>
+              <ListItemAvatar>
+                <Avatar>
+                  <CertificateIcon />
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={t('Certificate Logs')}
+                secondary={`${data.users.reduce((sum, user) => sum + user.certificate_logs, 0)} ${t('actions')}`}
+              />
+            </ListItem>
+            <ListItem divider>
+              <ListItemAvatar>
+                <Avatar>
+                  <CertificateIcon />
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={t('Certificates Created')}
+                secondary={`${data.users.reduce((sum, user) => sum + user.certificates_created, 0)} ${t('actions')}`}
+              />
+            </ListItem>
+            <ListItem divider>
+              <ListItemAvatar>
+                <Avatar>
+                  <CertificateIcon />
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={t('Certificates Updated')}
+                secondary={`${data.users.reduce((sum, user) => sum + user.certificates_updated, 0)} ${t('actions')}`}
+              />
+            </ListItem>
+            <ListItem divider>
+              <ListItemAvatar>
+                <Avatar>
+                  <ProjectIcon />
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={t('Projects Created')}
+                secondary={`${data.users.reduce((sum, user) => sum + user.projects_created, 0)} ${t('actions')}`}
+              />
+            </ListItem>
+            <ListItem divider>
+              <ListItemAvatar>
+                <Avatar>
+                  <ProjectIcon />
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={t('Projects Updated')}
+                secondary={`${data.users.reduce((sum, user) => sum + user.projects_updated, 0)} ${t('actions')}`}
+              />
+            </ListItem>
+          </List>
+        </CardContent>
+      </ActivityCard>
+    </Grid>
+  </Grid>
+)}
     </Root>
   );
 }

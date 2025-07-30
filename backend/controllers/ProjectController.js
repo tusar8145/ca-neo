@@ -8,7 +8,7 @@ export const list = async (req, res, next) => {
   try {
     const created_by = user_id;
     const projects = await prisma.projects.findMany({  // plural here
-     // where: { created_by },
+      ...req.clientId? {where: { client_id:req.clientId }}:{},
       include: {
         certificates: {
           select: { serial: true, status: true, pc_identifier: true }

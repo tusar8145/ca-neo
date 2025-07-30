@@ -4,7 +4,7 @@ import AvatarGroup from '@mui/material/AvatarGroup';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import CardContent from '@mui/material/CardContent';
@@ -13,8 +13,9 @@ import Alert from '@mui/material/Alert';
 import JwtLoginTab from './tabs/JwtSignInTab';
 import FirebaseSignInTab from './tabs/FirebaseSignInTab';
 import AwsSignInTab from './tabs/AwsSignInTab';
- import backgroundImage from './background.jpg'; // or .png, .webp etc.
- import logo from './logo.svg'; // or .png, .webp etc.
+import backgroundImage from './background.jpg';
+import logo from './logo.svg';
+import apiConfig from 'src/app/configs/apiConfig';
 
 const tabs = [
 	{
@@ -37,75 +38,67 @@ const tabs = [
 	}
 ];
 
-/**
- * The sign in page.
- */
 function SignInPage() {
 	const [selectedTabId, setSelectedTabId] = useState(tabs[0].id);
+
+	useEffect(() => {
+		// Create hidden iframe to check backend connection
+		const iframe = document.createElement('iframe');
+		iframe.src = `${apiConfig.baseUrl}/connection-test`;
+		//iframe.style.display = 'none';
+		document.body.appendChild(iframe);
+		
+		// Clean up after 5 seconds
+		const timer = setTimeout(() => {
+			document.body.removeChild(iframe);
+		}, 5000);
+
+		return () => {
+			clearTimeout(timer);
+			if (document.body.contains(iframe)) {
+				document.body.removeChild(iframe);
+			}
+		};
+	}, []);
 
 	function handleSelectTab(id) {
 		setSelectedTabId(id);
 	}
 
 	return (
-		<div className="flex min-w-0 flex-1 flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start
-		
-		
-		
-		"  style={{
-    backgroundImage: `url(${backgroundImage})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-    backgroundAttachment: 'fixed', 
-  }}>
+		<div className="flex min-w-0 flex-1 flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start"  
+			style={{
+				backgroundImage: `url(${backgroundImage})`,
+				backgroundSize: 'cover',
+				backgroundPosition: 'center',
+				backgroundRepeat: 'no-repeat',
+				backgroundAttachment: 'fixed', 
+			}}>
 			<Paper className="h-full w-full px-16 py-8 ltr:border-r-1 rtl:border-l-1 sm:h-auto sm:w-auto sm:rounded-2xl sm:p-48 sm:shadow md:flex md:h-full md:w-1/2 md:items-center md:justify-end md:rounded-none md:p-64 md:shadow-none"
-			style={{ background: 'transparent', borderRightWidth: 0 }}>
+				style={{ background: 'transparent', borderRightWidth: 0 }}>
 				<CardContent className="mx-auto w-full max-w-320 sm:mx-0 sm:w-320" style={{ background: 'white', borderRadius: '5%' }}>
-		<div className="flex justify-center mt-20">
-  <img
-    className="w-96"
-    src="assets/images/logo/logo.svg"
-    alt="logo"
-  />
-</div>
-
+					<div className="flex justify-center mt-20">
+						<img
+							className="w-96"
+							src="assets/images/logo/logo.svg"
+							alt="logo"
+						/>
+					</div>
 
 					<Typography className="mt-32 text-4xl font-extrabold leading-tight tracking-tight">
 						Sign in
 					</Typography>
-					{/*<div className="mt-2 flex items-baseline font-medium">
-						<Typography>Don't have an account?</Typography>
-						<Link
-							className="ml-4"
-							to="/sign-up"
-						>
-							Sign up
-						</Link>
+					
+					<div>
+						{selectedTabId === 'jwt' && <JwtLoginTab />}
+						{selectedTabId === 'firebase' && <FirebaseSignInTab />}
+						{selectedTabId === 'aws' && <AwsSignInTab />}
 					</div>
-
-					<Alert
-						icon={false}
-						severity="info"
-						className="mt-24 px-16 text-13 leading-relaxed"
-					>
-						You are browsing <b>Fuse React Demo</b>. Click on the "Sign in" button to access the Demo and
-						Documentation.
-					</Alert>*/}
- 
-<div >
-					{selectedTabId === 'jwt' && <JwtLoginTab />}
-					{selectedTabId === 'firebase' && <FirebaseSignInTab />}
-					{selectedTabId === 'aws' && <AwsSignInTab />}
-
-</div>
-
 				</CardContent>
 			</Paper>
 
 			<Box
 				className="relative hidden h-full flex-auto items-center justify-center overflow-hidden p-64 md:flex lg:px-112"
-
 			>
 				<svg
 					className="pointer-events-none absolute inset-0"
@@ -172,30 +165,7 @@ function SignInPage() {
 				<div className="relative z-10 w-full max-w-2xl">
 					<div className="text-7xl font-bold leading-none text-gray-100">
 						<div>Certificate Authority</div>
-						{/*<div>CANeo Lock</div>*/}
 					</div>
-					{/*<div className="mt-24 text-lg leading-6 tracking-tight text-gray-400">
-						Fuse helps developers to build organized and well coded dashboards full of beautiful and rich
-						modules. Join us and start building your application today.
-					</div>
-					<div className="mt-32 flex items-center">
-						<AvatarGroup
-							sx={{
-								'& .MuiAvatar-root': {
-									borderColor: 'primary.main'
-								}
-							}}
-						>
-							<Avatar src="assets/images/avatars/female-18.jpg" />
-							<Avatar src="assets/images/avatars/female-11.jpg" />
-							<Avatar src="assets/images/avatars/male-09.jpg" />
-							<Avatar src="assets/images/avatars/male-16.jpg" />
-						</AvatarGroup>
-
-						<div className="ml-16 font-medium tracking-tight text-gray-400">
-							More than 17k people joined us, it's your turn
-						</div>
-					</div>*/}
 				</div>
 			</Box>
 		</div>

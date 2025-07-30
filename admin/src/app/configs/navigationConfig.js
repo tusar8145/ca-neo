@@ -51,15 +51,15 @@ const navigationConfig = [
         icon: 'heroicons-outline:document-text',
         url: 'certificates'
       },
-	    {
+      {
         id: 'certificates-expiring',
         title: 'Expired Certificates',
         translate: 'CertificatesExpering',
         type: 'item',
         icon: 'heroicons-outline:document-text',
         url: 'certificates-expiring'
-      },      
-	  {
+      },
+      {
         id: 'certificate-logs',
         title: 'Audit Logs',
         translate: 'AuditLogs',
@@ -73,32 +73,42 @@ const navigationConfig = [
   // API Section
 
 
-  // Healthcare Management Section
+  // Client Management Section
   {
     id: 'healthcare-management',
-    title: 'Healthcare Manage',
+    title: 'Client Manage',
     translate: 'HealthcareManage',
     type: 'collapse',
     icon: 'heroicons-outline:plus-circle',
-    auth: authRoles.hospitalAssistant,
-    children: [ 
+    auth: authRoles.superAdmin,
+    children: [
       {
         id: 'hospitals',
-        title: 'Hospitals',
-        translate: 'Hospitals',
+        title: 'Clients',
+        translate: 'Clients',
         type: 'item',
         icon: 'heroicons-outline:plus-circle',
         url: 'hospital-management',
-		auth: authRoles.admin
+        auth: authRoles.superAdmin
       },
+    ]
+  },
+  {
+    id: 'staff-management',
+    title: 'Staff Manage',
+    translate: 'StaffManagement',
+    type: 'collapse',
+    icon: 'heroicons-outline:plus-circle',
+    auth: authRoles.admin,
+    children: [
       {
         id: 'staff',
         title: 'Staff',
         translate: 'Staff',
         type: 'item',
         icon: 'heroicons-outline:users',
-    	url: 'staff-management',
-        auth: authRoles.hospitalAssistant
+        url: 'staff-management',
+        auth: authRoles.admin
       }
     ]
   },
@@ -110,7 +120,7 @@ const navigationConfig = [
     icon: 'heroicons-outline:key',
     auth: authRoles.common,
     url: 'api-documents'
-  }, 
+  },
   // System Section
   /*{
     id: 'system',
@@ -225,10 +235,10 @@ const navigationConfig = [
     url: 'documentation'
   },
 
-  // Hospital Management (unchanged URL)
+  // Client Management (unchanged URL)
   {
     id: 'hospital-management',
-    title: 'Hospital Management',
+    title: 'Client Management',
     translate: 'HospitalManagement',
     type: 'item',
     icon: 'heroicons-outline:building-hospital',  // Updated icon

@@ -23,7 +23,7 @@ const locale = {
 	Surgery:'手術',
 
 
-	HospitalManagement:'病院の管理',
+	HospitalManagement:'クライアント管理',
 	DPCAnalysis:'DPC分析',
 	Search:'検索',
 	DataUpload:'データのアップロード',
@@ -43,7 +43,7 @@ const locale = {
   Certificates: '証明書',
   AuditLogs: '監査ログ',
   APIManagement: 'APIドキュメント',
-  HealthcareManage: 'ヘルスケア管理',
+  HealthcareManage: 'クライアント管理',
   Hospitals: '病院',
   Staff: 'スタッフ',
   System: 'システム',
@@ -51,7 +51,7 @@ const locale = {
   Documentation: 'ドキュメント',
   CertificatesExpering: '有効期限切れの証明書',
 	AuditLogs: 'ユーザーのアクティビティ',
-
+	Clients:"クライアント",
 
 
 

@@ -137,58 +137,67 @@ export const manage_list_assis = async (req, res, next) => {
 
 export const manage_list = async (req, res, next) => {
   try {
-    console.log(req.body)
+    const { take, skip, order, others } = req.body;
+    const hospitalId = others?.hospital_id ? parseInt(others.hospital_id) : null;
 
-    let f_columnFilters = req.body?.filter?.f_columnFilters
-    let globalFilter = req.body?.filter?.globalFilter
-    let f_globalFilters = req.body?.filter?.f_globalFilters
-    let others =req.body?.filter?.others
+    // Base where conditions
+    const whereConditions = {
+      role: 'staff' // Always filter by staff role
+    };
 
-      let result_=await prisma.admins.findMany({
-          ...response.list_paginate(req),
-          where: {
-            ...f_columnFilters ? { ...f_columnFilters } : {},
-            ...globalFilter ?{...f_globalFilters} : {},
-            role:'staff',
-            ...others?{...others}:{}
-          },
-          include: {
-            staff_hospital: true,
-            creator:{select:{
-              name:true
-            }},
-          },
-        })
- 
-        const url = new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`);
-        const result=[]
-        for (let h = 0; h < result_.length; h++) {
-            let this_=result_[h]
+    // Add hospital filter if provided
+    if (hospitalId) {
+      whereConditions.hospital_id = hospitalId;
+    }
 
-            let logo = this_.photo || 'defaultUser.png'
-
-            
-
-            result.push({
-              "id": this_.id,
-              "photo": url.origin+'/api/hospital-manage/image/'+logo,
-              "name": this_.name,
-              "email": this_.email,
-              "address": this_.address,
-              "created_by": this_.created_by,
-              "created_at": this_.created_at,
-              "updated_at": this_.updated_at,
-              "hospital_id": this_.hospital_id,
-              "password":null,
-              "phone": this_.phone,
-              "role": this_.role,
-              "creator":this_?.creator?.name,
-            })
+    // Add other filters from 'others' except hospital_id
+    if (others) {
+      Object.entries(others).forEach(([key, value]) => {
+        if (key !== 'hospital_id' && value !== undefined) {
+          whereConditions[key] = value;
         }
-   
-      response.list(result,res)
+      });
+    }
+
+    let result_ = await prisma.admins.findMany({
+      take: take || 100,
+      skip: skip || 0,
+      orderBy: order ? JSON.parse(order) : undefined,
+      where: whereConditions,
+      include: {
+        staff_hospital: true,
+        creator: {
+          select: {
+            name: true
+          }
+        },
+      },
+    });
+
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const result = result_.map(admin => ({
+      id: admin.id,
+      photo: `${baseUrl}/api/hospital-manage/image/${admin.photo || 'defaultUser.png'}`,
+      name: admin.name,
+      email: admin.email,
+      address: admin.address,
+      created_by: admin.created_by,
+      created_at: admin.created_at,
+      updated_at: admin.updated_at,
+      hospital_id: admin.hospital_id,
+      password: null,
+      phone: admin.phone,
+      role: admin.role,
+      creator: admin?.creator?.name,
+    }));
+
+    response.list({
+      success: "success",
+      message: "Data Fetch Successful",
+      data: result
+    }, res);
   } catch (error) {
-      response.error(error,res,next)    
+    response.error(error, res, next);    
   }
 };
 

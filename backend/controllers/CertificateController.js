@@ -130,7 +130,7 @@ export const createProjectWithCertificates = async (req, res, next) => {
     const pc_count = parseInt(req.body.pc_count, 10);
     const pcCount = parseInt(pc_count, 10) || 0;
     const created_by = req.user.id; // Assuming user_id comes from authenticated user
-
+    
     // Validate staff_ids (if provided)
     if (staff_ids && staff_ids.length > 0) {
       const existingAdmins = await prisma.admins.findMany({
@@ -162,6 +162,7 @@ export const createProjectWithCertificates = async (req, res, next) => {
         updated_by: created_by,
         created_at: new Date(),
         updated_at: new Date(),
+        client_id:req.clientId
       }
     });
 
@@ -659,11 +660,21 @@ export const getProjectCRL = async (req, res, next) => {
 
 export const getCertificateList = async (req, res, next) => {
   try {
-    let { projectId, status } = req.query; projectId=parseInt(projectId)
-    if (status=='all'){status=null}
+    let { projectId, status } = req.query;
+    projectId = parseInt(projectId);
+    if (status == 'all') { status = null; }
     const userId = user_id;
 
-    const where = {};
+    const where = {
+      project: {} // Initialize project relation filter
+    };
+
+    // Add client_id filter if present in request
+    if (req.clientId) {
+      where.project.client_id = parseInt(req.clientId);
+    }
+
+    // Validate project ownership if projectId is specified
     if (projectId) {
       if (!await validateProjectOwnership(projectId, userId)) {
         return response.notFound('Project not found or access denied', res);
@@ -672,13 +683,18 @@ export const getCertificateList = async (req, res, next) => {
     } else {
       // Get all projects owned by user
       const projects = await prisma.projects.findMany({
-       // where: { created_by: userId },
+        where: {
+          created_by: userId,
+          ...(req.clientId ? { client_id: parseInt(req.clientId) } : {}) // Filter by client_id if present
+        },
         select: { id: true }
       });
+      if (projects?.length>0)
       where.project_id = { in: projects.map(p => p.id) };
     }
 
     if (status) where.status = status;
+    console.log(where,'================')
 
     const certificates = await prisma.certificates.findMany({
       where,
@@ -686,7 +702,8 @@ export const getCertificateList = async (req, res, next) => {
         project: {
           select: {
             name: true,
-            id: true
+            id: true,
+            client_id: true // Include client_id in the response if needed
           }
         }
       },
@@ -700,9 +717,10 @@ export const getCertificateList = async (req, res, next) => {
       created_at: timeBeauty(cert.created_at),
       updated_at: timeBeauty(cert.updated_at),
       project_name: cert.project.name,
-     // download_url: `/api/certificates/${cert.serial}/download`,
-     // revoke_url: `/api/certificates/${cert.serial}/revoke`,
-     // verify_url: `/api/certificates/${cert.serial}/verify`
+      client_id: cert.project.client_id, // Include client_id in the response
+      // download_url: `/api/certificates/${cert.serial}/download`,
+      // revoke_url: `/api/certificates/${cert.serial}/revoke`,
+      // verify_url: `/api/certificates/${cert.serial}/verify`
     }));
 
     response.list({ certificates: result }, res);
@@ -1063,7 +1081,7 @@ export const getExpiringCertificates = async (req, res, next) => {
   try {
     const days = parseInt(req.params.days) || 30;
     const userId = user_id;
-console.log(days)
+    
     const thresholdDate = new Date();
     thresholdDate.setDate(thresholdDate.getDate() + days);
 
@@ -1073,11 +1091,11 @@ console.log(days)
         expires_at: {
           lte: thresholdDate
         },
-        //created_by: userId
+        project: req.clientId ? { client_id: parseInt(req.clientId) } : undefined
       },
       orderBy: { expires_at: 'asc' },
       include: {
-        project: true // ✅ fixed: changed from projects to project
+        project: true
       }
     });
 
@@ -1174,28 +1192,82 @@ export const updateCommonNameBySerial = async (req, res, next) => {
 
 export const getAllUsersActivity = async (req, res, next) => {
   try {
+    const clientId = req.clientId ? parseInt(req.clientId) : null;
+    const userId = req.user?.id ? parseInt(req.user.id) : null;
+
     // Get all admins with their activity counts
     const users = await prisma.admins.findMany({
+      where: clientId 
+        ? {
+            OR: [
+              { id: userId },
+              { hospital_id: clientId }
+            ]
+          }
+        : {},
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
+        hospital_id: true,
         _count: {
           select: {
-            certificate_actions: true,
-            created_projects: true,
-            updated_projects: true,
-            created_certificates: true,
-            updated_certificates: true
+            certificate_actions: {
+              where: clientId 
+                ? { 
+                    certificate: { 
+                      project: { client_id: clientId } 
+                    } 
+                  } 
+                : {}
+            },
+            created_projects: {
+              where: clientId ? { client_id: clientId } : {}
+            },
+            updated_projects: {
+              where: clientId ? { client_id: clientId } : {}
+            },
+            created_certificates: {
+              where: clientId 
+                ? { 
+                    project: { client_id: clientId } 
+                  } 
+                : {}
+            },
+            updated_certificates: {
+              where: clientId 
+                ? { 
+                    project: { client_id: clientId } 
+                  } 
+                : {}
+            }
           }
         }
       },
       orderBy: { name: 'asc' }
     });
 
-    // Get recent activity from certificate logs only (since project_logs doesn't exist)
+    // Get recent activity with client_id filtering
     const recentActivity = await prisma.certificate_logs.findMany({
+      where: clientId 
+        ? {
+            OR: [
+              {
+                certificate: {
+                  project: {
+                    client_id: clientId
+                  }
+                }
+              },
+              {
+                actor: {
+                  hospital_id: clientId
+                }
+              }
+            ]
+          } 
+        : {},
       select: {
         id: true,
         action: true,
@@ -1208,7 +1280,8 @@ export const getAllUsersActivity = async (req, res, next) => {
             common_name: true,
             project: {
               select: {
-                name: true
+                name: true,
+                client_id: true
               }
             }
           }
@@ -1217,7 +1290,8 @@ export const getAllUsersActivity = async (req, res, next) => {
           select: {
             id: true,
             name: true,
-            role: true
+            role: true,
+            hospital_id: true
           }
         }
       },
@@ -1225,24 +1299,34 @@ export const getAllUsersActivity = async (req, res, next) => {
       take: 100
     });
 
-    const result = {
-      users: users.map(user => ({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        total_actions: user._count.certificate_actions + 
-                      user._count.created_projects + 
-                      user._count.updated_projects +
-                      user._count.created_certificates +
-                      user._count.updated_certificates,
-        certificate_logs: user._count.certificate_actions,
-        certificates_created: user._count.created_certificates,
-        certificates_updated: user._count.updated_certificates,
-        projects_created: user._count.created_projects,
-        projects_updated: user._count.updated_projects
-      })),
-      recent_activity: recentActivity.map(item => ({
+    // Filter and map users with their counts
+    const filteredUsers = users.map(user => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      hospital_id: user.hospital_id,
+      total_actions: 
+        user._count.certificate_actions +
+        user._count.created_projects + 
+        user._count.updated_projects +
+        user._count.created_certificates +
+        user._count.updated_certificates,
+      certificate_logs: user._count.certificate_actions,
+      certificates_created: user._count.created_certificates,
+      certificates_updated: user._count.updated_certificates,
+      projects_created: user._count.created_projects,
+      projects_updated: user._count.updated_projects
+    }));
+
+    // Filter recent activity to only show actions from the same client
+    const filteredRecentActivity = recentActivity
+      .filter(activity => 
+        !clientId || 
+        (activity.certificate?.project?.client_id === clientId) ||
+        (activity.actor?.hospital_id === clientId)
+      )
+      .map(item => ({
         type: 'certificate',
         id: item.id,
         action: item.action,
@@ -1256,27 +1340,24 @@ export const getAllUsersActivity = async (req, res, next) => {
         timestamp: timeBeauty(item.created_at),
         metadata: item.metadata,
         action_display: formatActionDisplay(item.action, 'certificate')
-      })),
+      }));
+
+    // Calculate stats based on filtered data
+    const activeUsers = filteredUsers.filter(u => u.total_actions > 0).length;
+    const totalActions = filteredUsers.reduce((sum, user) => sum + user.total_actions, 0);
+
+    const result = {
+      users: filteredUsers,
+      recent_activity: filteredRecentActivity,
       stats: {
-        total_users: users.length,
-        total_actions: users.reduce((sum, user) => sum + 
-          user._count.certificate_actions +
-          user._count.created_projects +
-          user._count.updated_projects +
-          user._count.created_certificates +
-          user._count.updated_certificates, 0),
-        active_users: users.filter(u => 
-          u._count.certificate_actions > 0 || 
-          u._count.created_projects > 0 ||
-          u._count.updated_projects > 0 ||
-          u._count.created_certificates > 0 ||
-          u._count.updated_certificates > 0
-        ).length,
+        total_users: filteredUsers.length,
+        total_actions: totalActions,
+        active_users: activeUsers,
         by_role: {
-          superAdmin: users.filter(u => u.role === 'superAdmin').length,
-          admin: users.filter(u => u.role === 'admin').length,
-          hospitalAssistant: users.filter(u => u.role === 'hospitalAssistant').length,
-          staff: users.filter(u => u.role === 'staff').length
+          superAdmin: filteredUsers.filter(u => u.role === 'superAdmin').length,
+          admin: filteredUsers.filter(u => u.role === 'admin').length,
+          //hospitalAssistant: filteredUsers.filter(u => u.role === 'hospitalAssistant').length,
+          staff: filteredUsers.filter(u => u.role === 'staff').length
         }
       }
     };

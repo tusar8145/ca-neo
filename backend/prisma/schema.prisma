@@ -90,6 +90,7 @@ model projects {
   updated_at     DateTime  @default(now())
   created_by     Int
   updated_by     Int
+  client_id      Int?
 
   creator        admins    @relation("project_created_by", fields: [created_by], references: [id])
   updater        admins    @relation("project_updated_by", fields: [updated_by], references: [id])

@@ -14,7 +14,7 @@ const HospitalConfig = {
 	settings: {
 		layout: {}
 	},
-	auth    : authRoles.admin,
+	auth    : authRoles.superAdmin,
 	routes: [
 		{
 			path: 'hospital-management',

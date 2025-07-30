@@ -6,12 +6,13 @@ const authRoles = {
 	 * The admin role grants access to users with the 'admin' role.
 	 */
 	admin: ['admin'],
+	superAdmin: ['superAdmin'],
 	hospitalAssistant:['hospitalAssistant'],
 	staff: ['staff'],
 	hospitalAssistant_staff: ['staff', 'hospitalAssistant'],
 	admin_hospitalAssistant: ['admin', 'hospitalAssistant'],
 
-	common: ['admin', 'staff', 'hospitalAssistant'],
+	common: ['admin', 'staff', 'hospitalAssistant', 'superAdmin'],
 
 	/**
 	 * The onlyGuest role grants access to unauthenticated users.

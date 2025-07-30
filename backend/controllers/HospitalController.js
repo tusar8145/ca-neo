@@ -99,7 +99,7 @@ export const manage_create = async (req, res, next) => {
       req.body.name=req.body.admin_name
       req.body.email=req.body.admin_email
       req.body.phone=req.body.admin_phone
-      req.body.role='hospitalAssistant'
+      req.body.role='admin'
 
       req.body.password=req.body.admin_password
 

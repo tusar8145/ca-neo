@@ -70,6 +70,8 @@ function Projects() {
   const headingTitle = "Projects";
   const { theme, toggleTheme } = useTheme();
   useEffect(() => { toggleTheme(t(headingTitle)) }, [t(headingTitle)]);
+  const { hospital, toggleHospital } = useTheme();
+  axios.defaults.headers.common['X-ClientId-Header'] = hospital?.id || null;
 
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
@@ -115,7 +117,7 @@ function Projects() {
   useEffect(() => {
     fetchProjects();
     fetchHospitalStaff();
-  }, []);
+  }, [hospital]);
 
   const fetchProjects = async () => {
     setActionLoading(prev => ({ ...prev, fetch: true }));
@@ -139,12 +141,16 @@ const fetchHospitalStaff = async () => {
       order: '',
       others: {
         role: 'staff',
-        hospital_id: 2 // Make dynamic if needed
+        hospital_id: hospital?.id
       }
     });
-    setHospitalStaff(response.data.data);
+
+    // Handle nested data structure
+    const staffData = response.data?.data?.data || [];
+    setHospitalStaff(staffData);
   } catch (error) {
     console.error('Error fetching hospital staff:', error);
+    setHospitalStaff([]); // Fallback to empty array
   } finally {
     setStaffLoading(false);
   }
@@ -385,17 +391,17 @@ const handleSubmit = async () => {
             </Alert>
           )}
 
-          <div className="flex justify-end mb-4" style={{ padding: '16px 0' }}>
-            <StyledButton
-              variant="contained"
-              className="bg-[#0A2E52BF] hover:bg-[#0A2E52] text-white"
-              startIcon={actionLoading.add ? <CircularProgress size={20} color="inherit" /> : <AddIcon />}
-              onClick={handleAddClick}
-              disabled={actionLoading.add}
-            >
-              {actionLoading.add ? t('Creating...') : t('Add New Project')}
-            </StyledButton>
-          </div>
+        <div className="flex justify-end mb-4" style={{ padding: '16px 0' }}>
+          <StyledButton
+            variant="contained"
+            className="bg-[#0A2E52BF] hover:bg-[#0A2E52] text-white"
+            startIcon={actionLoading.add ? <CircularProgress size={20} color="inherit" /> : <AddIcon />}
+            onClick={handleAddClick}
+            disabled={actionLoading.add || !(hospital?.id>0)}
+          >
+            {actionLoading.add ? t('Creating...') : t('Add New Project')}
+          </StyledButton>
+        </div>
 
           <TableContainer component={Paper} className="shadow-md rounded-lg">
             <Table className="min-w-full">
@@ -612,20 +618,29 @@ const handleSubmit = async () => {
 <Autocomplete
   multiple
   options={hospitalStaff}
-  getOptionLabel={(option) => option.name}
-  value={selectedStaff}
+  getOptionLabel={(option) => option?.name || ''}
+  value={selectedStaff || []}
   onChange={(event, newValue) => {
-    setSelectedStaff(newValue);
+    setSelectedStaff(newValue || []);
   }}
   loading={staffLoading}
   renderInput={(params) => (
     <TextField
       {...params}
       label={t("Assign API User")}
-      placeholder="Select staff members"
+      placeholder={hospitalStaff.length > 0 ? t("Select staff members") : t("No staff available")}
+      helperText={hospitalStaff.length === 0 && !staffLoading ? t("No staff members found for this hospital") : ""}
     />
   )}
-  isOptionEqualToValue={(option, value) => option.id === value.id}
+  isOptionEqualToValue={(option, value) => option?.id === value?.id}
+  noOptionsText={
+    staffLoading 
+      ? "Loading..." 
+      : hospitalStaff.length === 0 
+        ? t("No staff members available") 
+        : t("No options")
+  }
+  disabled={hospitalStaff.length === 0}
 />
 
 
