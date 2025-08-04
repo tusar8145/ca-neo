@@ -50,7 +50,7 @@ function Logo() {
 {hospital?.logo?.endsWith('default.png') ? (
   <div 
     className="hospital-name-fallback stylish-name"
-    style={{ width }}
+    style={{ width:"100%" }}
     title={hospital?.name} // Full name tooltip on hover
   >
     {hospital?.name?.length > 22
