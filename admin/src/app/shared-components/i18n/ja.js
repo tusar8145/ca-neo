@@ -359,7 +359,7 @@ const locale = {
   "Project Actions": "プロジェクトのアクション",
   "users": "ユーザー",
   "actions": "アクション",
-  "Failed to add PCs to project. Please check PC limit": "プロジェクトにPCを追加できませんでした。PCの上限を確認してください。",
+  "Failed to add PCs to project. Please Check PC Limit": "プロジェクトにPCを追加できませんでした。PCの上限を確認してください。",
   "Add PC": "PCを追加",
   "Download Certificates": "証明書をダウンロード",
   "Auto Create Certificates": "証明書を自動作成",

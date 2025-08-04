@@ -339,7 +339,7 @@ const handleSubmit = async () => {
         `${apiConfig.baseUrl}projects/${selectedProject.id}/add-pcs`,
         { count: pcCount }
       );
-      setSuccessAlert(`Added ${response.data.added_count} PCs to project`);
+      setSuccessAlert(`Added ${pcCount} PCs to project`);
       fetchProjects();
       setAddPcDialogOpen(false);
     } catch (error) {
