@@ -50,7 +50,7 @@ function NavbarMobileLayout3(props) {
 
 				<Navigation layout="vertical" />
 
-				<div className="flex-0 flex items-center justify-center py-48 opacity-10">
+				<div className="flex-0 flex items-center justify-center py-48 opacity-100">
 					<img
 						className="w-full max-w-64"
 						src="assets/images/logo/logo.svg"

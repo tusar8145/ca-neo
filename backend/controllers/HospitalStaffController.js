@@ -137,7 +137,8 @@ export const manage_list_assis = async (req, res, next) => {
 
 export const manage_list = async (req, res, next) => {
   try {
-    const { take, skip, order, others } = req.body;
+    const { take, skip, order, filter } = req.body;
+    const others = filter?.others || {};
     const hospitalId = others?.hospital_id ? parseInt(others.hospital_id) : null;
 
     // Base where conditions
@@ -153,7 +154,7 @@ export const manage_list = async (req, res, next) => {
     // Add other filters from 'others' except hospital_id
     if (others) {
       Object.entries(others).forEach(([key, value]) => {
-        if (key !== 'hospital_id' && value !== undefined) {
+        if (key !== 'hospital_id' && value !== undefined && value !== null && value !== '') {
           whereConditions[key] = value;
         }
       });
@@ -173,6 +174,8 @@ export const manage_list = async (req, res, next) => {
         },
       },
     });
+
+ 
 
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const result = result_.map(admin => ({

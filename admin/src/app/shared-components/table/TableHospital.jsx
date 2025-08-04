@@ -537,7 +537,7 @@ console.log(f_globalFilters,'f_globalFilters')
     //optionally customize modal content
     renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
       <>
-        <DialogTitle variant="h3">{t('Edit Hospital')}</DialogTitle>
+        <DialogTitle variant="h3">{t('Edit')}</DialogTitle>
         <DialogContent
           sx={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
         >

@@ -373,6 +373,7 @@ const locale = {
   "No staff members found for this hospital": "この病院に該当するスタッフが見つかりません",
   "No staff members available": "利用可能なスタッフがいません",
   "No options": "選択肢がありません",
+   "Failed to delete project": "プロジェクトの削除に失敗しました",
 };
 export default locale;
 

@@ -148,10 +148,10 @@ const fetchHospitalStaff = async () => {
       take: 100,
       skip: 0,
       order: '',
-      others: {
+      filter: {others: {
         role: 'staff',
         hospital_id: hospital?.id
-      }
+      }}
     });
 
     // Handle nested data structure

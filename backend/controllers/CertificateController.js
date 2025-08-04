@@ -978,6 +978,10 @@ export const deleteProjectPCWithCertificate = async (req, res, next) => {
     const { projectId } = req.params;
     const created_by = req.user.id; // Assuming user_id comes from authenticated user
 
+    if(req.user.role != 'superAdmin'){
+      response.list({ actions }, res);
+    }
+
     const project = await prisma.projects.findFirst({
       where: { id: parseInt(projectId) },
       include: {
@@ -989,6 +993,8 @@ export const deleteProjectPCWithCertificate = async (req, res, next) => {
         }
       }
     });
+
+
 
     if (!project) {
       return response.notFound('Project not found', res);

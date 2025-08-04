@@ -47,18 +47,45 @@ function Logo() {
 			{hospital?.logo &&
 				<div className=''>
 					 
-					<img
-						className="logo-icon logo_img"
-						style={{width:width}}
-						src={hospital?.logo}
-						alt="logo"
-						onLoad={event => {
-							setSize({
-							  height: event.target.naturalHeight,
-							  width: event.target.naturalWidth
-							});
-						  }}
-					/>	
+{hospital?.logo?.endsWith('default.png') ? (
+  <div 
+    className="hospital-name-fallback stylish-name"
+    style={{ width }}
+    title={hospital?.name} // Full name tooltip on hover
+  >
+    {hospital?.name?.length > 22
+      ? `${hospital.name.substring(0, 22)}...` 
+      : hospital?.name}
+  </div>
+) : (
+  <div className="">
+    <img
+      className="logo-icon logo_img"
+      style={{ width }}
+      src={hospital?.logo}
+      alt="logo"
+      onLoad={event => {
+        setSize({
+          height: event.target.naturalHeight,
+          width: event.target.naturalWidth
+        });
+      }}
+    />
+    {hospital?.name && (
+      <span 
+        className="name-tag stylish-name"
+        title={hospital.name}
+      >
+        {hospital.name.length > 22
+          ? `${hospital.name.substring(0, 22)}...` 
+          : hospital.name}
+      </span>
+    )}
+  </div>
+)}
+
+
+
 	 {/*size?.height && size?.width && (
         <span>
           {size.height} x {size.width}
