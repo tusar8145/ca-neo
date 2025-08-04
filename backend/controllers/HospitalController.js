@@ -267,53 +267,105 @@ export const manage_update = async (req, res, next) => {
 
 export const manage_remove = async (req, res, next) => {
   try {
-    let admin_email=req.body.admin_email
+    const hospitalId = req.body.id;
+    const adminEmail = req.body.admin_email;
 
-    let ddd = await prisma.dpc_generate.deleteMany({
+    // First, find the hospital and its admin
+    const hospital = await prisma.hospitals.findUnique({
+      where: { id: hospitalId },
+      include: { admin: true }
+    });
+
+    if (!hospital) {
+      return response.error({ message: "Hospital not found" }, res, next);
+    }
+
+    // Check if the provided email matches the hospital admin's email
+    if (hospital.admin.email !== adminEmail) {
+      return response.error({ message: "Admin email doesn't match hospital admin" }, res, next);
+    }
+
+    // Delete related data in the correct order:
+
+    // 1. Delete certificate logs for certificates in projects of this hospital
+    await prisma.certificate_logs.deleteMany({
       where: {
-        hospital_id: req.body.id 
-      },
-    })
-
-     
-
-
-    //remove admin
-    let delete_first = await prisma.hospitals.delete({
-      where: {
-         id: req.body.id 
-      },
-    })
-    
-     
-
-    //if success remove hospital
-    let  delete_ =null
-    if(delete_first){
-           delete_ =  await prisma.admins.delete({
-          where: {
-             email: admin_email 
-          },
-        })
-
-        
-
-        if(delete_){response.remove(delete_,res)}else{
-            //create again
-            const newCreate = await prisma.user.create({
-              data: {
-              ...delete_first
-              },
-            });
-            response.remove([],res)
+        certificate: {
+          project: {
+            admin_projects: {
+              some: {
+                admin: {
+                  hospital_id: hospitalId
+                }
+              }
+            }
+          }
         }
-    }else{
+      }
+    });
 
+    // 2. Delete certificates in projects of this hospital
+    await prisma.certificates.deleteMany({
+      where: {
+        project: {
+          admin_projects: {
+            some: {
+              admin: {
+                hospital_id: hospitalId
+              }
+            }
+          }
+        }
+      }
+    });
 
-    } 
-      
+    // 3. Delete admin_projects relations for admins of this hospital
+    await prisma.admin_projects.deleteMany({
+      where: {
+        admin: {
+          hospital_id: hospitalId
+        }
+      }
+    });
+
+    // 4. Delete projects created by admins of this hospital
+    await prisma.projects.deleteMany({
+      where: {
+        OR: [
+          { created_by: { in: await prisma.admins.findMany({ 
+            where: { hospital_id: hospitalId },
+            select: { id: true }
+          }).then(admins => admins.map(a => a.id)) } },
+          { updated_by: { in: await prisma.admins.findMany({ 
+            where: { hospital_id: hospitalId },
+            select: { id: true }
+          }).then(admins => admins.map(a => a.id)) } }
+        ]
+      }
+    });
+
+    // 5. Delete other admins associated with this hospital (non-admin role)
+    await prisma.admins.deleteMany({
+      where: {
+        hospital_id: hospitalId,
+        id: { not: hospital.admin_id } // don't delete the main admin yet
+      }
+    });
+
+    // 6. Delete the hospital
+    await prisma.hospitals.delete({
+      where: { id: hospitalId }
+    });
+
+    // 7. Finally, delete the main admin
+    const deletedAdmin = await prisma.admins.delete({
+      where: { id: hospital.admin_id }
+    });
+
+    response.remove(deletedAdmin, res);
+
   } catch (error) {
-      response.error(error,res,next)    
+    console.error("Error in manage_remove:", error);
+    response.error(error, res, next);
   }
 };
-
