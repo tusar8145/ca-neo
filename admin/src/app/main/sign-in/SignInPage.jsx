@@ -42,36 +42,68 @@ const tabs = [
 function SignInPage() {
   const [selectedTabId, setSelectedTabId] = useState(tabs[0].id);
 
-  useEffect(() => {
-    const checkBackendConnection = async () => {
-      try {
-        await axios.get(`${apiConfig.baseUrl}connection-test`, {
-          // Bypass SSL verification for self-signed certificates in development
-         /* httpsAgent: new (require('https').Agent)({  
-            rejectUnauthorized: process.env.NODE_ENV === 'production'
-          })*/
-        });
-		console.log('success...')
-      } catch (error) {
-		console.log(error,'????????????')
-       // if (error.code === 'ERR_CERT_AUTHORITY_INVALID' || 
-       //     error.message.includes('certificate')) {
-          // Open new tab with the connection test URL
+useEffect(() => {
+  const checkBackendConnection = async () => {
+    try {
+      await axios.get(`${apiConfig.baseUrl}connection-test`, {
+        // Bypass SSL verification for self-signed certificates in development
+        /* httpsAgent: new (require('https').Agent)({  
+          rejectUnauthorized: process.env.NODE_ENV === 'production'
+        })*/
+      });
+      console.log('success...');
+      
+      // Reset the retry counter on successful connection
+      localStorage.removeItem('backendRetryCount');
+      localStorage.removeItem('backendLastRetryTime');
+      
+    } catch (error) {
+      console.log(error, '????????????');
+      
+      const now = Date.now();
+      const retryCount = parseInt(localStorage.getItem('backendRetryCount') || '0');
+      const lastRetryTime = parseInt(localStorage.getItem('backendLastRetryTime') || '0');
+      
+      // Check if 5 minutes have passed since last retry
+      const fiveMinutesInMs = 5 * 60 * 1000;
+      const shouldResetCounter = (now - lastRetryTime) > fiveMinutesInMs;
+      
+      if (shouldResetCounter) {
+        // Reset counter if more than 5 minutes have passed
+        localStorage.setItem('backendRetryCount', '0');
+        localStorage.setItem('backendLastRetryTime', now.toString());
+      }
+      
+      const currentRetryCount = shouldResetCounter ? 0 : retryCount;
+      
+      if (currentRetryCount < 2) {
+        // Increment retry counter and update time
+        const newRetryCount = currentRetryCount + 1;
+        localStorage.setItem('backendRetryCount', newRetryCount.toString());
+        localStorage.setItem('backendLastRetryTime', now.toString());
+        
+        // Redirect to connection test
         const originalLocation = window.location.href;
         window.location.href = `${apiConfig.baseUrl}/connection-test`;
+        
         setTimeout(() => {
           window.location.href = originalLocation;
         }, 2000);
-       // }
+      } else {
+        console.log('Maximum retry attempts (2) reached. Please try again later.');
+        // Optionally show a user-friendly message or disable functionality
       }
-    };
+    }
+  };
 
-    checkBackendConnection();
-  }, []);
+  checkBackendConnection();
+}, []);
 
-  function handleSelectTab(id) {
-    setSelectedTabId(id);
-  }
+function handleSelectTab(id) {
+  setSelectedTabId(id); 
+}
+
+ 
 
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center sm:flex-row sm:justify-center md:items-start md:justify-start"  
